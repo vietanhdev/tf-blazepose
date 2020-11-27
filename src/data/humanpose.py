@@ -35,7 +35,7 @@ class DataSequence(Sequence):
         Number of batch in the Sequence.
         :return: The number of batches in the Sequence.
         """
-        return math.ceil(len(self.data) / float(self.batch_size))
+        return math.floor(len(self.data) / float(self.batch_size))
 
     def __getitem__(self, idx):
         """

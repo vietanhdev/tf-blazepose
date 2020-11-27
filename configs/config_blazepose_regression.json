@@ -7,7 +7,7 @@
         "train_labels":                 "data/humanpose/train.json",
         "val_images":                   "data/humanpose/images/",
         "val_labels":                   "data/humanpose/val.json",
-        "test_data_folder":             "data/humanpose/images/",
+        "test_images":                  "data/humanpose/images/",
         "test_labels":                  "data/humanpose/val.json"
     },                   
     "model" : {

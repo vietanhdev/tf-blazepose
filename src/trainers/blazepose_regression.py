@@ -3,7 +3,6 @@ import pathlib
 
 import tensorflow as tf
 from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard
-from tensorflow.keras.models import Model
 
 from ..model_phase import ModelPhase
 from ..models.keypoint_detection.blazepose import BlazePose
@@ -18,9 +17,9 @@ def train(config):
     """
 
     train_config = config["train"]
+    model_config = config["model"]
 
     # Initialize model
-    model_config = config["model"]
     model = BlazePose(
         model_config["num_joints"], ModelPhase(model_config["model_phase"])).build_model()
     model.compile(optimizer=tf.optimizers.Adam(train_config["learning_rate"]),
@@ -40,8 +39,9 @@ def train(config):
     tb_log_path = os.path.join(exp_path, "tb_logs")
     tb = TensorBoard(log_dir=tb_log_path, write_graph=True)
     model_folder_path = os.path.join(exp_path, "models")
+    pathlib.Path(model_folder_path).mkdir(parents=True, exist_ok=True)
     mc = ModelCheckpoint(filepath=os.path.join(
-        model_folder_path, "model_ep{epoch:03d}.h5"), save_weights_only=False, save_format="h5", verbose=2)
+        model_folder_path, "model_ep{epoch:03d}.h5"), save_weights_only=True, save_format="h5", verbose=2)
 
     # Load data
     train_dataset = DataSequence(
@@ -66,3 +66,33 @@ def train(config):
               callbacks=[tb, mc],
               verbose=1
               )
+
+
+def test(config, model_path):
+    """Test trained model
+
+    Args:
+        config (dict): Model configuration
+        model (str): Path to h5 model to be tested
+    """
+
+    train_config = config["train"]
+    model_config = config["model"]
+
+    # Initialize model and load weights
+    model = BlazePose(
+        model_config["num_joints"], ModelPhase(model_config["model_phase"])).build_model()
+    model.compile(loss="binary_crossentropy", metrics=["mean_absolute_error"])
+    model.load_weights(model_path)
+
+    # Load data
+    model_config = config["model"]
+    test_dataset = DataSequence(
+        config["data"]["test_images"],
+        config["data"]["test_labels"],
+        batch_size=1,
+        input_size=(model_config["im_width"], model_config["im_height"]),
+        shuffle=False, augment=False, random_flip=False)
+
+    # Test model
+    model.evaluate(test_dataset, verbose=1)
