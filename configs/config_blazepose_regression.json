@@ -19,7 +19,7 @@
     "train": {
         "train_batch_size":             16,
         "val_batch_size":               8,
-        "nb_epochs":                    150,
+        "nb_epochs":                    80,
         "learning_rate":                1e-5,
         "load_weights":                 false,
         "pretrained_weights_path":      "models/model_to_load.h5"
