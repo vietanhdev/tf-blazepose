@@ -6,7 +6,7 @@ from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard
 from tensorflow.keras.models import Model
 
 from ..model_phase import ModelPhase
-from ..models.keypoint_detection import BlazePose
+from ..models.keypoint_detection.blazepose import BlazePose
 from ..data.humanpose import DataSequence
 
 
@@ -21,8 +21,8 @@ def train(config):
 
     # Initialize model
     model_config = config["model"]
-    model: Model = BlazePose(
-        model_config["num_joints"], ModelPhase(model_config["model_phase"]))
+    model = BlazePose(
+        model_config["num_joints"], ModelPhase(model_config["model_phase"])).build_model()
     model.compile(optimizer=tf.optimizers.Adam(train_config["learning_rate"]),
                   loss="binary_crossentropy")
 

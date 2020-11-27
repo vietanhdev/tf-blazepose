@@ -1,7 +1,7 @@
 import argparse
 import importlib
 import json
-from src.trainers.blazepose_regression import train_model
+from src.trainers.blazepose_regression import train
 import tensorflow as tf
 
 for gpu in tf.config.experimental.list_physical_devices('GPU'):

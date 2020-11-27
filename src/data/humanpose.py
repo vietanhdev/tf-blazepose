@@ -44,8 +44,7 @@ class DataSequence(Sequence):
         :return: batches of image and the corresponding mask
         """
 
-        batch_data = self.data[idx *
-                               self.batch_size: (1 + idx) * self.batch_size]
+        batch_data = self.data[idx * self.batch_size: (1 + idx) * self.batch_size]
 
         batch_image = []
         batch_landmark = []
@@ -81,7 +80,7 @@ class DataSequence(Sequence):
         landmark = normalize_landmark(landmarks, self.input_size)
 
         # Add visibility output
-        landmark = landmark.reshape(2, -1)
+        landmark = landmark.reshape(-1, 2)
         visibility = np.zeros((landmark.shape[0], 1))
         landmark = np.hstack((landmark, visibility))
         landmark = landmark.reshape(self.batch_size, -1)

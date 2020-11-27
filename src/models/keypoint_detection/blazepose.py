@@ -1,7 +1,8 @@
 import tensorflow as tf
 from tensorflow.keras.models import Model
-from .layers import BlazeBlock
-from lib.model_phase import ModelPhase
+from ...model_phase import ModelPhase
+
+from .blazepose_layers import BlazeBlock
 
 
 class BlazePose():
@@ -124,12 +125,12 @@ class BlazePose():
             # In: 1, 1, 1, 288
             tf.keras.layers.Dense(units=3*self.num_joints,
                                   activation="sigmoid"),
-            tf.keras.layers.Reshape((self.num_joints, 3))
+            # tf.keras.layers.Reshape((self.num_joints, 3))
         ])
 
     def build_model(self):
 
-        input_x = tf.keras.layers.Input(shape=(None, 256, 256, 3))
+        input_x = tf.keras.layers.Input(shape=(256, 256, 3))
 
         # In: 1x256x256x3
         # Out: 1x128x128x24

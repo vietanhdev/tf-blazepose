@@ -13,7 +13,7 @@
     "model" : {
         "im_width":                     256,
         "im_height":                    256,
-        "num_joints":                   25,
+        "num_joints":                   7,
         "model_phase":                  "REGRESSION"
     },
     "train": {
