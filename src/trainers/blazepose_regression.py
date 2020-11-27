@@ -6,7 +6,7 @@ from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard
 from tensorflow.keras.models import Model
 
 from ..model_phase import ModelPhase
-from ..models.blazepose import BlazePose
+from ..models.keypoint_detection import BlazePose
 from ..data.humanpose import DataSequence
 
 
