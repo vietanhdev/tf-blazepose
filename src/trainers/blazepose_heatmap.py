@@ -6,7 +6,7 @@ from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard
 
 from ..model_phase import ModelPhase
 from ..models.keypoint_detection.blazepose import BlazePose
-from ..data.humanpose import DataSequence
+from ..data.mpii_datagen import MPIIDataGen
 
 
 def train(config):
@@ -44,55 +44,49 @@ def train(config):
         model_folder_path, "model_ep{epoch:03d}.h5"), save_weights_only=True, save_format="h5", verbose=1)
 
     # Load data
-    train_dataset = DataSequence(
+    train_dataset = MPIIDataGen(
         config["data"]["train_images"],
         config["data"]["train_labels"],
-        batch_size=train_config["train_batch_size"],
-        input_size=(model_config["im_width"], model_config["im_height"]),
-        shuffle=True, augment=True, random_flip=True)
-    val_dataset = DataSequence(
+        (model_config["im_height"], model_config["im_width"]),
+        (128, 128),
+        is_train=True)
+    train_datagen = train_dataset.generator(train_config["train_batch_size"], 1, sigma=2, with_meta=False, is_shuffle=True,
+                  rot_flag=True, scale_flag=True, flip_flag=True)
+
+    val_dataset = MPIIDataGen(
         config["data"]["val_images"],
         config["data"]["val_labels"],
-        batch_size=train_config["val_batch_size"],
-        input_size=(model_config["im_width"], model_config["im_height"]),
-        shuffle=False, augment=False, random_flip=False)
+        (model_config["im_height"], model_config["im_width"]),
+        (128, 128),
+        is_train=False)
+    val_datagen = val_dataset.generator(train_config["val_batch_size"], 1, sigma=2, with_meta=False, is_shuffle=False,
+                  rot_flag=False, scale_flag=False, flip_flag=False)
 
     # Train
-    model.fit(train_dataset,
+    model.fit(train_datagen,
               epochs=train_config["nb_epochs"],
-              steps_per_epoch=len(train_dataset),
-              validation_data=val_dataset,
-              validation_steps=len(val_dataset),
+              steps_per_epoch=train_dataset.get_dataset_size() // train_config["train_batch_size"],
+              validation_data=val_datagen,
+              validation_steps=val_dataset.get_dataset_size() // train_config["val_batch_size"],
               callbacks=[tb, mc],
               verbose=1
               )
 
 
-def test(config, model_path):
-    """Test trained model
+def load_model(config, model_path):
+    """Load pretrained model
 
     Args:
         config (dict): Model configuration
         model (str): Path to h5 model to be tested
     """
 
-    train_config = config["train"]
     model_config = config["model"]
 
     # Initialize model and load weights
     model = BlazePose(
         model_config["num_joints"], ModelPhase(model_config["model_phase"])).build_model()
-    model.compile(loss="binary_crossentropy", metrics=["mean_absolute_error"])
+    model.compile()
     model.load_weights(model_path)
 
-    # Load data
-    model_config = config["model"]
-    test_dataset = DataSequence(
-        config["data"]["test_images"],
-        config["data"]["test_labels"],
-        batch_size=1,
-        input_size=(model_config["im_width"], model_config["im_height"]),
-        shuffle=False, augment=False, random_flip=False)
-
-    # Test model
-    model.evaluate(test_dataset, verbose=1)
+    return model

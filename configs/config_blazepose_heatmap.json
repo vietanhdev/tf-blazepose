@@ -1,0 +1,30 @@
+{
+    "experiment_name":                  "blazepose_heatmap",
+    "trainer":                          "blazepose_heatmap",
+    "data_loader":                      "humanpose",      
+    "data": {   
+        "train_images":                 "/mnt/DATA/PUSHUP_PROJECT/deep-human-pose/data/mpii/images/",
+        "train_labels":                 "data/mpii_annotations.json",
+        "val_images":                   "/mnt/DATA/PUSHUP_PROJECT/deep-human-pose/data/mpii/images/",
+        "val_labels":                   "data/mpii_annotations.json",
+        "test_images":                  "/mnt/DATA/PUSHUP_PROJECT/deep-human-pose/data/mpii/images/",
+        "test_labels":                  "data/mpii_annotations.json"
+    },                   
+    "model" : {
+        "im_width":                     256,
+        "im_height":                    256,
+        "num_joints":                   16,
+        "model_phase":                  "HEATMAP"
+    },
+    "train": {
+        "train_batch_size":             16,
+        "val_batch_size":               16,
+        "nb_epochs":                    150,
+        "learning_rate":                1e-4,
+        "load_weights":                 false,
+        "pretrained_weights_path":      "models/model_to_load.h5"
+    },
+    "test": {
+        "model_file" :                 ""
+    }
+}
