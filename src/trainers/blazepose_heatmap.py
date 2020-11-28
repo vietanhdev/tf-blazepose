@@ -23,7 +23,7 @@ def train(config):
     model = BlazePose(
         model_config["num_joints"], ModelPhase(model_config["model_phase"])).build_model()
     model.compile(optimizer=tf.optimizers.Adam(train_config["learning_rate"]),
-                  loss="binary_crossentropy")
+                  loss="binary_crossentropy", metrics="accuracy")
 
     # Load pretrained model
     if train_config["load_weights"]:

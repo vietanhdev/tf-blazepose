@@ -78,9 +78,7 @@ while(True):
 
     cv2.imshow('frame', cvmat)
 
-    print(out.shape)
-    out = np.sum(out[0], axis=2) * 50 * 255
-    print(np.max(out))
+    out = np.sum(out[0], axis=2)
     cv2.imshow('heatmap', out)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
