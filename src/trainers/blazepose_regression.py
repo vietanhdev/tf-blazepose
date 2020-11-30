@@ -4,7 +4,7 @@ import pathlib
 import tensorflow as tf
 from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard
 
-from ..model_phase import ModelPhase
+from ..model_type import ModelType
 from ..models.keypoint_detection.blazepose import BlazePose
 from ..data.humanpose import DataSequence
 
@@ -21,7 +21,7 @@ def train(config):
 
     # Initialize model
     model = BlazePose(
-        model_config["num_joints"], ModelPhase(model_config["model_phase"])).build_model()
+        model_config["num_joints"], ModelType(model_config["model_type"])).build_model()
     model.compile(optimizer=tf.optimizers.Adam(train_config["learning_rate"]),
                   loss="binary_crossentropy")
 
@@ -79,7 +79,7 @@ def load_model(config, model_path):
 
     # Initialize model and load weights
     model = BlazePose(
-        model_config["num_joints"], ModelPhase(model_config["model_phase"])).build_model()
+        model_config["num_joints"], ModelType(model_config["model_type"])).build_model()
     model.compile()
     model.load_weights(model_path)
 
@@ -98,7 +98,7 @@ def test(config, model_path):
 
     # Initialize model and load weights
     model = BlazePose(
-        model_config["num_joints"], ModelPhase(model_config["model_phase"])).build_model()
+        model_config["num_joints"], ModelType(model_config["model_type"])).build_model()
     model.compile(loss="binary_crossentropy", metrics=["mean_absolute_error"])
     model.load_weights(model_path)
 

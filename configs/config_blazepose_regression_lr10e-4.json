@@ -14,7 +14,7 @@
         "im_width":                     256,
         "im_height":                    256,
         "num_joints":                   7,
-        "model_phase":                  "REGRESSION"
+        "model_type":                  "REGRESSION"
     },
     "train": {
         "train_batch_size":             16,
