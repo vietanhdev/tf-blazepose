@@ -1,5 +1,5 @@
 {
-    "experiment_name":                  "blazepose_heatmap",
+    "experiment_name":                  "blazepose_heatmap_mse",
     "trainer":                          "blazepose_heatmap",
     "data_loader":                      "humanpose",      
     "data": {   
@@ -17,7 +17,7 @@
         "model_phase":                  "HEATMAP"
     },
     "train": {
-        "loss_function":                "binary_crossentropy",
+        "loss_function":                "mean_squared_error",
         "train_batch_size":             32,
         "val_batch_size":               32,
         "nb_epochs":                    150,

@@ -45,7 +45,7 @@ def render_joints(cvmat, joints, conf_th=0.2):
     return cvmat
 
 
-confth = 0.5
+confth = 0.05
 
 
 cap = cv2.VideoCapture(args.video)
@@ -65,6 +65,8 @@ while(True):
 
     kps = post_process_heatmap(out[0, :, :, :])
 
+    # print(kps)
+
     ignore_kps = ['plevis', 'thorax', 'head_top']
     kp_keys = MPIIDataGen.get_kp_keys()
     mkps = list()
@@ -73,12 +75,14 @@ while(True):
             _conf = 0.0
         else:
             _conf = _kp[2]
-        mkps.append((_kp[0] * scale[1] * 4, _kp[1] * scale[0] * 4, _conf))
+        mkps.append((_kp[0] * scale[1] * 2, _kp[1] * scale[0] * 2, _conf))
     cvmat = render_joints(origin_frame, mkps, confth)
 
     cv2.imshow('frame', cvmat)
 
     out = np.sum(out[0], axis=2)
+    out = cv2.resize(out, None, fx=3, fy=3)
+    out = out * 1.5
     cv2.imshow('heatmap', out)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break

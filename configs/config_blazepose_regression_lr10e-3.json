@@ -1,0 +1,30 @@
+{
+    "experiment_name":                  "blazepose_regressionlr10e-3",
+    "trainer":                          "blazepose_regression",
+    "data_loader":                      "humanpose",      
+    "data": {   
+        "train_images":                 "data/humanpose/images/",
+        "train_labels":                 "data/humanpose/train.json",
+        "val_images":                   "data/humanpose/images/",
+        "val_labels":                   "data/humanpose/val.json",
+        "test_images":                  "data/humanpose/images/",
+        "test_labels":                  "data/humanpose/val.json"
+    },                   
+    "model" : {
+        "im_width":                     256,
+        "im_height":                    256,
+        "num_joints":                   7,
+        "model_phase":                  "REGRESSION"
+    },
+    "train": {
+        "train_batch_size":             16,
+        "val_batch_size":               8,
+        "nb_epochs":                    150,
+        "learning_rate":                1e-3,
+        "load_weights":                 false,
+        "pretrained_weights_path":      "models/model_to_load.h5"
+    },
+    "test": {
+        "model_file" :                 ""
+    }
+}

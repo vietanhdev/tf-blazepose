@@ -7,7 +7,7 @@ from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard
 from ..model_phase import ModelPhase
 from ..models.keypoint_detection.blazepose import BlazePose
 from ..data.mpii_datagen import MPIIDataGen
-
+from ..models.losses import focal_tversky
 
 def train(config):
     """Train model
@@ -22,8 +22,13 @@ def train(config):
     # Initialize model
     model = BlazePose(
         model_config["num_joints"], ModelPhase(model_config["model_phase"])).build_model()
+
+    loss_function = train_config["loss_function"]
+    if loss_function == "focal_tversky":
+        loss_function = focal_tversky
+
     model.compile(optimizer=tf.optimizers.Adam(train_config["learning_rate"]),
-                  loss="binary_crossentropy", metrics="accuracy")
+                  loss=loss_function, metrics=[tf.keras.metrics.MeanIoU(num_classes=16)])
 
     # Load pretrained model
     if train_config["load_weights"]:
@@ -69,8 +74,7 @@ def train(config):
               validation_data=val_datagen,
               validation_steps=val_dataset.get_dataset_size() // train_config["val_batch_size"],
               callbacks=[tb, mc],
-              verbose=1
-              )
+              verbose=1)
 
 
 def load_model(config, model_path):

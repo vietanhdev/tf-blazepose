@@ -23,7 +23,7 @@ def train(config):
     model = BlazePose(
         model_config["num_joints"], ModelPhase(model_config["model_phase"])).build_model()
     model.compile(optimizer=tf.optimizers.Adam(train_config["learning_rate"]),
-                  loss="binary_crossentropy", metrics="accuracy")
+                  loss="binary_crossentropy")
 
     # Load pretrained model
     if train_config["load_weights"]:
@@ -67,6 +67,23 @@ def train(config):
               verbose=1
               )
 
+def load_model(config, model_path):
+    """Load pretrained model
+
+    Args:
+        config (dict): Model configuration
+        model (str): Path to h5 model to be tested
+    """
+
+    model_config = config["model"]
+
+    # Initialize model and load weights
+    model = BlazePose(
+        model_config["num_joints"], ModelPhase(model_config["model_phase"])).build_model()
+    model.compile()
+    model.load_weights(model_path)
+
+    return model
 
 def test(config, model_path):
     """Test trained model

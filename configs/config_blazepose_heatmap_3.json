@@ -1,5 +1,5 @@
 {
-    "experiment_name":                  "blazepose_heatmap",
+    "experiment_name":                  "blazepose_heatmap_3",
     "trainer":                          "blazepose_heatmap",
     "data_loader":                      "humanpose",      
     "data": {   
@@ -17,13 +17,13 @@
         "model_phase":                  "HEATMAP"
     },
     "train": {
-        "loss_function":                "binary_crossentropy",
+        "loss_function":                "mean_squared_error",
         "train_batch_size":             32,
         "val_batch_size":               32,
         "nb_epochs":                    150,
-        "learning_rate":                1e-3,
-        "load_weights":                 false,
-        "pretrained_weights_path":      "models/model_to_load.h5"
+        "learning_rate":                1e-4,
+        "load_weights":                 true,
+        "pretrained_weights_path":      "experiments/blazepose_heatmap/models/model_ep100.h5"
     },
     "test": {
         "model_file" :                 ""
