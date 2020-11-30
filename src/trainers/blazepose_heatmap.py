@@ -4,10 +4,11 @@ import pathlib
 import tensorflow as tf
 from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard
 
-from ..model_phase import ModelPhase
+from ..model_type import ModelType
 from ..models.keypoint_detection.blazepose import BlazePose
 from ..data.mpii_datagen import MPIIDataGen
-from ..models.losses import focal_tversky
+from .losses import focal_tversky
+from .pcks import PCKS
 
 def train(config):
     """Train model
@@ -21,7 +22,7 @@ def train(config):
 
     # Initialize model
     model = BlazePose(
-        model_config["num_joints"], ModelPhase(model_config["model_phase"])).build_model()
+        model_config["num_joints"], ModelType(model_config["model_type"])).build_model()
 
     loss_function = train_config["loss_function"]
     if loss_function == "focal_tversky":
@@ -89,7 +90,7 @@ def load_model(config, model_path):
 
     # Initialize model and load weights
     model = BlazePose(
-        model_config["num_joints"], ModelPhase(model_config["model_phase"])).build_model()
+        model_config["num_joints"], ModelType(model_config["model_type"])).build_model()
     model.compile()
     model.load_weights(model_path)
 

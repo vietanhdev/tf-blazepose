@@ -1,14 +1,13 @@
 import tensorflow as tf
 from tensorflow.keras.models import Model
-from ...model_phase import ModelPhase
-
+from ...model_type import ModelType
 from .blazepose_layers import BlazeBlock
 
 
 class BlazePose():
-    def __init__(self, num_joints: int, model_phase: ModelPhase = ModelPhase.REGRESSION):
+    def __init__(self, num_joints: int, model_type: ModelType = ModelType.REGRESSION):
 
-        self.model_phase = model_phase
+        self.model_type = model_type
         self.num_joints = num_joints
         self.conv1 = tf.keras.layers.Conv2D(
             filters=24, kernel_size=3, strides=(2, 2), padding='same', activation='relu'
@@ -167,6 +166,13 @@ class BlazePose():
 
         # === Regression ===
 
+        # Stop gradient for regression on 2-head model
+        if self.model_type == ModelType.TWO_HEAD:
+            x = tf.keras.backend.stop_gradient(x)
+            y2 = tf.keras.backend.stop_gradient(y2)
+            y3 = tf.keras.backend.stop_gradient(y3)
+            y4 = tf.keras.backend.stop_gradient(y4)
+
         x = self.conv12a(x) + self.conv12b(y2)
         # In: 1, 32, 32, 96
         x = self.conv13a(x) + self.conv13b(y3)
@@ -177,9 +183,11 @@ class BlazePose():
         # In: 1, 2, 2, 288
         joints = self.conv16(x)
 
-        if self.model_phase == ModelPhase.HEATMAP:
+        if self.model_type == ModelType.TWO_HEAD:
+            return Model(inputs=input_x, outputs=[heatmap, joints])
+        elif self.model_type == ModelType.HEATMAP:
             return Model(inputs=input_x, outputs=heatmap)
-        elif self.model_phase == ModelPhase.REGRESSION:
+        elif self.model_type == ModelType.REGRESSION:
             return Model(inputs=input_x, outputs=joints)
         else:
-            raise ValueError("Wrong model phase.")
+            raise ValueError("Wrong model type.")

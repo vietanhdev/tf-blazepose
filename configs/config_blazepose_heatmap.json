@@ -14,7 +14,7 @@
         "im_width":                     256,
         "im_height":                    256,
         "num_joints":                   16,
-        "model_phase":                  "HEATMAP"
+        "model_type":                  "HEATMAP"
     },
     "train": {
         "loss_function":                "binary_crossentropy",
