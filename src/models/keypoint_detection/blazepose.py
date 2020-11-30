@@ -123,7 +123,7 @@ class BlazePose():
             tf.keras.layers.GlobalAveragePooling2D(),
             # In: 1, 1, 1, 288
             tf.keras.layers.Dense(units=3*self.num_joints,
-                                  activation="sigmoid"),
+                                  activation=None),
             # tf.keras.layers.Reshape((self.num_joints, 3))
         ])
 
@@ -162,7 +162,7 @@ class BlazePose():
         # In: 1, 64, 64, 48
         y = self.conv10a(x) + self.conv10b(y0)
         # In: 1, 128, 128, 8
-        heatmap = tf.keras.activations.sigmoid(self.conv11(y))
+        heatmap = tf.keras.layers.Activation("sigmoid", name="heatmap")(self.conv11(y))
 
         # === Regression ===
 
@@ -182,9 +182,10 @@ class BlazePose():
         x = self.conv15(x)
         # In: 1, 2, 2, 288
         joints = self.conv16(x)
+        joints = tf.keras.layers.Activation("sigmoid", name="joints")(joints)
 
         if self.model_type == ModelType.TWO_HEAD:
-            return Model(inputs=input_x, outputs=[heatmap, joints])
+            return Model(inputs=input_x, outputs=[joints, heatmap])
         elif self.model_type == ModelType.HEATMAP:
             return Model(inputs=input_x, outputs=heatmap)
         elif self.model_type == ModelType.REGRESSION:

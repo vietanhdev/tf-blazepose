@@ -6,9 +6,9 @@ from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard
 
 from ..model_type import ModelType
 from ..models.keypoint_detection.blazepose import BlazePose
-from ..data.mpii_datagen import MPIIDataGen
+from ..data.mpii import DataSequence
 from .losses import focal_tversky
-from .pcks import PCKS
+# from .pcks import PCKS
 
 def train(config):
     """Train model
@@ -24,12 +24,14 @@ def train(config):
     model = BlazePose(
         model_config["num_joints"], ModelType(model_config["model_type"])).build_model()
 
-    loss_function = train_config["loss_function"]
-    if loss_function == "focal_tversky":
-        loss_function = focal_tversky
-
+    
+    loss_functions = {
+        "heatmap": "mean_squared_error",
+        "joints": "mean_squared_error"
+    }
     model.compile(optimizer=tf.optimizers.Adam(train_config["learning_rate"]),
-                  loss=loss_function, metrics=[tf.keras.metrics.MeanIoU(num_classes=16)])
+                  loss=loss_functions, metrics=["accuracy"])
+
 
     # Load pretrained model
     if train_config["load_weights"]:
@@ -50,32 +52,30 @@ def train(config):
         model_folder_path, "model_ep{epoch:03d}.h5"), save_weights_only=True, save_format="h5", verbose=1)
 
     # Load data
-    train_dataset = MPIIDataGen(
+    train_dataset = DataSequence(
         config["data"]["train_images"],
         config["data"]["train_labels"],
-        (model_config["im_height"], model_config["im_width"]),
-        (128, 128),
-        is_train=True)
-    train_datagen = train_dataset.generator(train_config["train_batch_size"], 1, sigma=2, with_meta=False, is_shuffle=True,
-                  rot_flag=True, scale_flag=True, flip_flag=True)
-
-    val_dataset = MPIIDataGen(
+        batch_size=train_config["train_batch_size"],
+        input_size=(model_config["im_width"], model_config["im_height"]),
+        heatmap_size=(model_config["heatmap_width"], model_config["heatmap_height"]),
+        n_points=config["model"]["num_joints"], shuffle=True, augment=True, random_flip=True, random_rotate=True, random_scale_on_crop=True)
+    val_dataset = DataSequence(
         config["data"]["val_images"],
         config["data"]["val_labels"],
-        (model_config["im_height"], model_config["im_width"]),
-        (128, 128),
-        is_train=False)
-    val_datagen = val_dataset.generator(train_config["val_batch_size"], 1, sigma=2, with_meta=False, is_shuffle=False,
-                  rot_flag=False, scale_flag=False, flip_flag=False)
+        batch_size=train_config["val_batch_size"],
+        input_size=(model_config["im_width"], model_config["im_height"]),
+        heatmap_size=(model_config["heatmap_width"], model_config["heatmap_height"]),
+        n_points=config["model"]["num_joints"], shuffle=False, augment=False, random_flip=False, random_rotate=False, random_scale_on_crop=False)
 
     # Train
-    model.fit(train_datagen,
+    model.fit(train_dataset,
               epochs=train_config["nb_epochs"],
-              steps_per_epoch=train_dataset.get_dataset_size() // train_config["train_batch_size"],
-              validation_data=val_datagen,
-              validation_steps=val_dataset.get_dataset_size() // train_config["val_batch_size"],
+              steps_per_epoch=len(train_dataset),
+              validation_data=val_dataset,
+              validation_steps=len(val_dataset),
               callbacks=[tb, mc],
-              verbose=1)
+              verbose=1
+              )
 
 
 def load_model(config, model_path):
@@ -89,8 +89,7 @@ def load_model(config, model_path):
     model_config = config["model"]
 
     # Initialize model and load weights
-    model = BlazePose(
-        model_config["num_joints"], ModelType(model_config["model_type"])).build_model()
+    model = BlazePose(model_config["num_joints"], ModelType(model_config["model_type"])).build_model()
     model.compile()
     model.load_weights(model_path)
 
