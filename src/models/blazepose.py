@@ -1,6 +1,6 @@
 import tensorflow as tf
 from tensorflow.keras.models import Model
-from ...model_type import ModelType
+from ..model_type import ModelType
 from .blazepose_layers import BlazeBlock
 
 

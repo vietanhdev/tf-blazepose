@@ -132,7 +132,7 @@ class DataSequence(Sequence):
 
             # Change the indices of landmark points and visibility
             l = landmark
-            landmark = [l[6], l[5], l[4], l[3], l[2], l[1], l[0]]
+            landmark = np.array([l[6], l[5], l[4], l[3], l[2], l[1], l[0]])
 
         # Unnormalize landmark points
         landmark = unnormalize_landmark(landmark, self.input_size)
@@ -162,6 +162,7 @@ class DataSequence(Sequence):
         # if self.output_heatmap:
         #     cv2.imshow("gtmap", gtmap.sum(axis=2))
         # cv2.waitKey(0)
+        landmark = np.array(landmark)
 
         return image, landmark, gtmap
 
@@ -176,7 +177,11 @@ class DataSequence(Sequence):
         npart = joints.shape[0]
         gtmap = np.zeros(shape=(outres[0], outres[1], npart), dtype=float)
         for i in range(npart):
-            visibility = joints[i, 2]
-            if visibility > 0:
+            is_visible = True
+            if len(joints[0]) > 2:
+                visibility = joints[i, 2]
+                if visibility <= 0:
+                    is_visible = False
+            if is_visible:
                 gtmap[:, :, i] = draw_labelmap(gtmap[:, :, i], joints[i, :], sigma)
         return gtmap

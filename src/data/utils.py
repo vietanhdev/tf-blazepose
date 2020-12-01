@@ -34,6 +34,7 @@ def unnormalize_landmark(landmark, image_size):
 
 def normalize_landmark(landmark, image_size):
     image_size = np.array(image_size)
+    landmark = np.array(landmark)
     landmark = landmark.astype(float)
     landmark[:, :2] = np.divide(landmark[:, :2], np.array(image_size).reshape((1, 2)))
     return landmark
