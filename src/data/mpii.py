@@ -12,7 +12,7 @@ from .augmentation import augment_img
 
 class DataSequence(Sequence):
 
-    def __init__(self, image_folder, label_file, batch_size=8, input_size=(256, 256), heatmap_size=(128, 128), heatmap_sigma=2, n_points=16, shuffle=True, augment=False, random_flip=False, random_rotate=False, random_scale_on_crop=False):
+    def __init__(self, image_folder, label_file, batch_size=8, input_size=(256, 256), heatmap_size=(128, 128), heatmap_sigma=4, n_points=16, shuffle=True, augment=False, random_flip=False, random_rotate=False, random_scale_on_crop=False):
 
         self.batch_size = batch_size
         self.input_size = input_size
@@ -70,7 +70,7 @@ class DataSequence(Sequence):
         batch_landmark = np.array(batch_landmark)
         batch_heatmap = np.array(batch_heatmap)
 
-        batch_image = self.preprocess_images(batch_image)
+        batch_image = DataSequence.preprocess_images(batch_image)
         batch_landmark = self.preprocess_landmarks(batch_landmark)
 
         # Prevent values from going outside [0, 1]
@@ -79,7 +79,11 @@ class DataSequence(Sequence):
 
         return batch_image, [batch_landmark, batch_heatmap]
 
-    def preprocess_images(self, images):
+    @staticmethod
+    def preprocess_images(images):
+        # Convert color to RGB
+        for i in range(images.shape[0]):
+            images[i] = cv2.cvtColor(images[i], cv2.COLOR_BGR2RGB)
         mean = np.array([0.4404, 0.4440, 0.4327], dtype=np.float)
         images = np.array(images, dtype=np.float32)
         images = (images - mean) / 255

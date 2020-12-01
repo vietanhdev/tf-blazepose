@@ -24,14 +24,10 @@ def train(config):
     model = BlazePose(
         model_config["num_joints"], ModelType(model_config["model_type"])).build_model()
 
-    
-    # loss_functions = {
-    #     "heatmap": "mean_squared_error",
-    #     "joints": "mean_squared_error"
-    # }
+
     loss_functions = {
         "heatmap": "binary_crossentropy",
-        "joints": "binary_crossentropy"
+        "joints": "mean_squared_error"
     }
     model.compile(optimizer=tf.optimizers.Adam(train_config["learning_rate"]),
                   loss=loss_functions)

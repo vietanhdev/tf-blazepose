@@ -3,9 +3,10 @@ import importlib
 import json
 import cv2
 import numpy as np
-from src.trainers.blazepose_trainer import load_model
+from src.trainers.blazepose_heatmap import load_model
+from src.data.data_process import normalize
 from src.utils.heatmap_process import post_process_heatmap
-from src.data.mpii import DataSequence
+from src.data.mpii_datagen import MPIIDataGen
 import tensorflow as tf
 
 for gpu in tf.config.experimental.list_physical_devices('GPU'):
@@ -44,7 +45,7 @@ def render_joints(cvmat, joints, conf_th=0.2):
     return cvmat
 
 
-confth = 0.1
+confth = 0.05
 
 
 cap = cv2.VideoCapture(args.video)
@@ -54,18 +55,20 @@ while(True):
 
     scale = (origin_frame.shape[0] * 1.0 / 256, origin_frame.shape[1] * 1.0 / 256)
 
-    # frame = cv2.cvtColor(origin_frame, cv2.COLOR_BGR2RGB)
-    frame = origin_frame
+    frame = cv2.cvtColor(origin_frame, cv2.COLOR_BGR2RGB)
     imgdata = cv2.resize(frame, (256, 256))
-    input_x = DataSequence.preprocess_images(np.array([imgdata]))
+    mean = np.array([0.4404, 0.4440, 0.4327], dtype=np.float)
+    imgdata = normalize(imgdata, mean)
+    input_x = imgdata[np.newaxis, :, :, :]
 
-    regress_kps, out = model.predict(input_x)
+    out = model.predict(input_x)
+
     kps = post_process_heatmap(out[0, :, :, :])
 
     # print(kps)
 
     ignore_kps = ['plevis', 'thorax', 'head_top']
-    kp_keys = DataSequence.get_kp_keys()
+    kp_keys = MPIIDataGen.get_kp_keys()
     mkps = list()
     for i, _kp in enumerate(kps):
         if kp_keys[i] in ignore_kps:
@@ -75,11 +78,6 @@ while(True):
         mkps.append((_kp[0] * scale[1] * 2, _kp[1] * scale[0] * 2, _conf))
     cvmat = render_joints(origin_frame, mkps, confth)
 
-    # Draw regressed keypoint
-    for p in regress_kps.reshape((-1, 3)):
-        x = int(p[0] * cvmat.shape[1])
-        y = int(p[1] * cvmat.shape[0])
-        cv2.circle(cvmat, center=(x, y), color=(0, 0, 255), radius=7, thickness=2)
     cv2.imshow('frame', cvmat)
 
     out = np.sum(out[0], axis=2)
