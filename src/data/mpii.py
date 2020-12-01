@@ -54,11 +54,6 @@ class DataSequence(Sequence):
 
         for data in batch_data:
 
-            # Flip 50% of images
-            flip = False
-            if self.random_flip and random.random() < 0.5:
-                flip = True
-
             # Load and augment data
             image, landmark, heatmap = self.load_data(self.image_folder, data)
 
@@ -86,7 +81,8 @@ class DataSequence(Sequence):
             images[i] = cv2.cvtColor(images[i], cv2.COLOR_BGR2RGB)
         mean = np.array([0.4404, 0.4440, 0.4327], dtype=np.float)
         images = np.array(images, dtype=np.float32)
-        images = (images - mean) / 255
+        images = images / 255.0
+        images -= mean
         return images
 
     def preprocess_landmarks(self, landmarks):
