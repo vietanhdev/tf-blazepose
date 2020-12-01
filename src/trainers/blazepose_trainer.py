@@ -25,12 +25,16 @@ def train(config):
         model_config["num_joints"], ModelType(model_config["model_type"])).build_model()
 
     
+    # loss_functions = {
+    #     "heatmap": "mean_squared_error",
+    #     "joints": "mean_squared_error"
+    # }
     loss_functions = {
-        "heatmap": "mean_squared_error",
-        "joints": "mean_squared_error"
+        "heatmap": "binary_crossentropy",
+        "joints": "binary_crossentropy"
     }
     model.compile(optimizer=tf.optimizers.Adam(train_config["learning_rate"]),
-                  loss=loss_functions, metrics=["accuracy"])
+                  loss=loss_functions)
 
 
     # Load pretrained model

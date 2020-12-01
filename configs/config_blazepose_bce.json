@@ -1,0 +1,32 @@
+{
+    "experiment_name":                  "blazepose_2head_bce",
+    "trainer":                          "blazepose_trainer",
+    "data_loader":                      "mpii",      
+    "data": {   
+        "train_images":                 "data/mpii/images/",
+        "train_labels":                 "data/mpii/train.json",
+        "val_images":                   "data/mpii/images/",
+        "val_labels":                   "data/mpii/val.json",
+        "test_images":                  "data/mpii/images/",
+        "test_labels":                  "data/mpii/val.json"
+    },                   
+    "model" : {
+        "im_width":                     256,
+        "im_height":                    256,
+        "heatmap_width":                128,
+        "heatmap_height":               128,
+        "num_joints":                   16,
+        "model_type":                  "TWO_HEAD"
+    },
+    "train": {
+        "train_batch_size":             16,
+        "val_batch_size":               8,
+        "nb_epochs":                    200,
+        "learning_rate":                1e-4,
+        "load_weights":                 false,
+        "pretrained_weights_path":      "models/model_to_load.h5"
+    },
+    "test": {
+        "model_file" :                 ""
+    }
+}

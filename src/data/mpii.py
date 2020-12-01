@@ -73,6 +73,10 @@ class DataSequence(Sequence):
         batch_image = self.preprocess_images(batch_image)
         batch_landmark = self.preprocess_landmarks(batch_landmark)
 
+        # Prevent values from going outside [0, 1]
+        batch_landmark[batch_landmark < 0] = 0
+        batch_landmark[batch_landmark > 1] = 1
+
         return batch_image, [batch_landmark, batch_heatmap]
 
     def preprocess_images(self, images):
@@ -109,13 +113,14 @@ class DataSequence(Sequence):
 
         # Scale
         if self.random_scale_on_crop:
-            scale = scale * np.random.uniform(0.8, 1.2)
+            scale = scale * np.random.uniform(0.9, 1.1)
 
         # Rotate image
         if self.random_rotate and random.choice([0, 1]):
             rot = np.random.randint(-1 * 30, 30)
         else:
             rot = 0
+        rot = 0 # We are having a bug in rotation
 
         cropimg = self.crop(image, center, scale, self.input_size, rot)
         cropimg = cv2.resize(cropimg, (self.input_size)).astype(np.uint8)
@@ -146,6 +151,7 @@ class DataSequence(Sequence):
         #     cv2.circle(draw, (int(x), int(y)), 1, (0,0,255))
 
         # cv2.imshow("draw", draw)
+        # cv2.imshow("gtmap", gtmap.sum(axis=2))
         # cv2.waitKey(0)
 
         return cropimg, landmark, gtmap
