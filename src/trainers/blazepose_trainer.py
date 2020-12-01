@@ -1,12 +1,12 @@
 import os
 import pathlib
+import importlib
 
 import tensorflow as tf
 from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard
 
 from ..model_type import ModelType
 from ..models.blazepose import BlazePose
-from ..data.mpii import DataSequence
 
 def train(config):
     """Train model
@@ -17,6 +17,10 @@ def train(config):
 
     train_config = config["train"]
     model_config = config["model"]
+
+    # Dataloader
+    datalib = importlib.import_module("src.data.{}".format(config["data_loader"]))
+    DataSequence = datalib.DataSequence
 
     # Initialize model
     model = BlazePose(
