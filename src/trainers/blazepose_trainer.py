@@ -5,10 +5,8 @@ import tensorflow as tf
 from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard
 
 from ..model_type import ModelType
-from ..models.keypoint_detection.blazepose import BlazePose
+from ..models.blazepose import BlazePose
 from ..data.mpii import DataSequence
-from .losses import focal_tversky
-# from .pcks import PCKS
 
 def train(config):
     """Train model
@@ -58,14 +56,18 @@ def train(config):
         batch_size=train_config["train_batch_size"],
         input_size=(model_config["im_width"], model_config["im_height"]),
         heatmap_size=(model_config["heatmap_width"], model_config["heatmap_height"]),
-        n_points=config["model"]["num_joints"], shuffle=True, augment=True, random_flip=True, random_rotate=True, random_scale_on_crop=True)
+        heatmap_sigma=model_config["heatmap_kp_sigma"],
+        n_points=model_config["num_joints"],
+        shuffle=True, augment=True, random_flip=True, random_rotate=True, random_scale_on_crop=True)
     val_dataset = DataSequence(
         config["data"]["val_images"],
         config["data"]["val_labels"],
         batch_size=train_config["val_batch_size"],
         input_size=(model_config["im_width"], model_config["im_height"]),
         heatmap_size=(model_config["heatmap_width"], model_config["heatmap_height"]),
-        n_points=config["model"]["num_joints"], shuffle=False, augment=False, random_flip=False, random_rotate=False, random_scale_on_crop=False)
+        heatmap_sigma=model_config["heatmap_kp_sigma"],
+        n_points=model_config["num_joints"],
+        shuffle=False, augment=False, random_flip=False, random_rotate=False, random_scale_on_crop=False)
 
     # Train
     model.fit(train_dataset,
@@ -74,8 +76,7 @@ def train(config):
               validation_data=val_dataset,
               validation_steps=len(val_dataset),
               callbacks=[tb, mc],
-              verbose=1
-              )
+              verbose=1)
 
 
 def load_model(config, model_path):

@@ -5,3 +5,4 @@ __pycache__
 !/experiments/.gitkeep
 /data
 !/data/.gitkeep
+/.vscode

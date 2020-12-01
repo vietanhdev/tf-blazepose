@@ -12,10 +12,11 @@ from .augmentation import augment_img
 
 class DataSequence(Sequence):
 
-    def __init__(self, image_folder, label_file, batch_size=8, input_size=(256, 256), heatmap_size=(128, 128), heatmap_sigma=4, n_points=16, shuffle=True, augment=False, random_flip=False, random_rotate=False, random_scale_on_crop=False):
+    def __init__(self, image_folder, label_file, batch_size=8, input_size=(256, 256), output_heatmap=True, heatmap_size=(128, 128), heatmap_sigma=4, n_points=16, shuffle=True, augment=False, random_flip=False, random_rotate=False, random_scale_on_crop=False):
 
         self.batch_size = batch_size
         self.input_size = input_size
+        self.output_heatmap = output_heatmap
         self.heatmap_size = heatmap_size
         self.heatmap_sigma = heatmap_sigma
         self.image_folder = image_folder
@@ -59,11 +60,13 @@ class DataSequence(Sequence):
 
             batch_image.append(image)
             batch_landmark.append(landmark)
-            batch_heatmap.append(heatmap)
+            if self.output_heatmap:
+                batch_heatmap.append(heatmap)
 
         batch_image = np.array(batch_image)
         batch_landmark = np.array(batch_landmark)
-        batch_heatmap = np.array(batch_heatmap)
+        if self.output_heatmap:
+            batch_heatmap = np.array(batch_heatmap)
 
         batch_image = DataSequence.preprocess_images(batch_image)
         batch_landmark = self.preprocess_landmarks(batch_landmark)
@@ -72,7 +75,10 @@ class DataSequence(Sequence):
         batch_landmark[batch_landmark < 0] = 0
         batch_landmark[batch_landmark > 1] = 1
 
-        return batch_image, [batch_landmark, batch_heatmap]
+        if self.output_heatmap:
+            return batch_image, [batch_landmark, batch_heatmap]
+        else:
+            return batch_image, batch_landmark
 
     @staticmethod
     def preprocess_images(images):
@@ -135,10 +141,12 @@ class DataSequence(Sequence):
             landmark[:, :2] = landmark_xy
 
         # Generate heatmap
-        gtmap_kps = landmark.copy()
-        gtmap_kps[:, :2] = (np.array(gtmap_kps[:, :2]).astype(float)
-                    * np.array(self.heatmap_size) / np.array(self.input_size)).astype(int)
-        gtmap = self.generate_gtmap(gtmap_kps, self.heatmap_sigma, self.heatmap_size)
+        gtmap = None
+        if self.output_heatmap:
+            gtmap_kps = landmark.copy()
+            gtmap_kps[:, :2] = (np.array(gtmap_kps[:, :2]).astype(float)
+                        * np.array(self.heatmap_size) / np.array(self.input_size)).astype(int)
+            gtmap = self.generate_gtmap(gtmap_kps, self.heatmap_sigma, self.heatmap_size)
 
         # Uncomment following lines to debug augmentation
         # draw = cropimg.copy()
@@ -151,7 +159,8 @@ class DataSequence(Sequence):
         #     cv2.circle(draw, (int(x), int(y)), 1, (0,0,255))
 
         # cv2.imshow("draw", draw)
-        # cv2.imshow("gtmap", gtmap.sum(axis=2))
+        # if self.output_heatmap:
+        #     cv2.imshow("gtmap", gtmap.sum(axis=2))
         # cv2.waitKey(0)
 
         return cropimg, landmark, gtmap

@@ -5,8 +5,8 @@ import tensorflow as tf
 from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard
 
 from ..model_type import ModelType
-from ..models.keypoint_detection.blazepose import BlazePose
-from ..data.humanpose import DataSequence
+from ..models.blazepose import BlazePose
+from ..data.mpii import DataSequence
 
 
 def train(config):
@@ -47,15 +47,17 @@ def train(config):
     train_dataset = DataSequence(
         config["data"]["train_images"],
         config["data"]["train_labels"],
+        output_heatmap=False,
         batch_size=train_config["train_batch_size"],
         input_size=(model_config["im_width"], model_config["im_height"]),
-        shuffle=True, augment=True, random_flip=True)
+        shuffle=True, augment=True, random_flip=True, random_rotate=True, random_scale_on_crop=True)
     val_dataset = DataSequence(
         config["data"]["val_images"],
         config["data"]["val_labels"],
+        output_heatmap=False,
         batch_size=train_config["val_batch_size"],
         input_size=(model_config["im_width"], model_config["im_height"]),
-        shuffle=False, augment=False, random_flip=False)
+        shuffle=False, augment=False, random_flip=False, random_rotate=False, random_scale_on_crop=False)
 
     # Train
     model.fit(train_dataset,
@@ -64,8 +66,7 @@ def train(config):
               validation_data=val_dataset,
               validation_steps=len(val_dataset),
               callbacks=[tb, mc],
-              verbose=1
-              )
+              verbose=1)
 
 def load_model(config, model_path):
     """Load pretrained model
@@ -93,7 +94,6 @@ def test(config, model_path):
         model (str): Path to h5 model to be tested
     """
 
-    train_config = config["train"]
     model_config = config["model"]
 
     # Initialize model and load weights
@@ -107,6 +107,7 @@ def test(config, model_path):
     test_dataset = DataSequence(
         config["data"]["test_images"],
         config["data"]["test_labels"],
+        output_heatmap=False,
         batch_size=1,
         input_size=(model_config["im_width"], model_config["im_height"]),
         shuffle=False, augment=False, random_flip=False)
