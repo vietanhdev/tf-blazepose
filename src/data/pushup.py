@@ -145,11 +145,11 @@ class DataSequence(Sequence):
         if self.output_heatmap:
             gtmap_kps = landmark.copy()
             gtmap_kps[:, :2] = (np.array(gtmap_kps[:, :2]).astype(float)
-                        * np.array(self.heatmap_size) / np.array(self.input_size) * np.array(self.heatmap_size)).astype(int)
+                        * np.array(self.heatmap_size) / np.array(self.input_size)).astype(int)
             gtmap = self.generate_gtmap(gtmap_kps, self.heatmap_sigma, self.heatmap_size)
 
         # Uncomment following lines to debug augmentation
-        # draw = cropimg.copy()
+        # draw = image.copy()
         # for i in range(len(landmark)):
         #     x = int(landmark[i][0])
         #     y = int(landmark[i][1])
