@@ -90,42 +90,42 @@ class BlazePose():
         # === Regression ===
 
         #  In: 1, 64, 64, 48)
-        self.conv12a = BlazeBlock(block_num=4, channel=96)    # input res: 64
+        self.conv12a = BlazeBlock(block_num=4, channel=96, name_prefix="regression_conv12a_")    # input res: 64
         self.conv12b = tf.keras.models.Sequential([
             tf.keras.layers.DepthwiseConv2D(
-                kernel_size=3, padding="same", activation=None),
+                kernel_size=3, padding="same", activation=None, name="regression_conv12b_depthwise"),
             tf.keras.layers.Conv2D(
-                filters=96, kernel_size=1, activation="relu")
-        ])
+                filters=96, kernel_size=1, activation="relu", name="regression_conv12b_conv1x1")
+        ], name="regression_conv12b")
 
-        self.conv13a = BlazeBlock(block_num=5, channel=192)   # input res: 32
+        self.conv13a = BlazeBlock(block_num=5, channel=192, name_prefix="regression_conv13a_")   # input res: 32
         self.conv13b = tf.keras.models.Sequential([
             tf.keras.layers.DepthwiseConv2D(
-                kernel_size=3, padding="same", activation=None),
+                kernel_size=3, padding="same", activation=None, name="regression_conv13b_depthwise"),
             tf.keras.layers.Conv2D(
-                filters=192, kernel_size=1, activation="relu")
-        ])
+                filters=192, kernel_size=1, activation="relu", name="regression_conv13b_conv1x1")
+        ], name="regression_conv13b")
 
-        self.conv14a = BlazeBlock(block_num=6, channel=288)   # input res: 16
+        self.conv14a = BlazeBlock(block_num=6, channel=288, name_prefix="regression_conv14a_")   # input res: 16
         self.conv14b = tf.keras.models.Sequential([
             tf.keras.layers.DepthwiseConv2D(
-                kernel_size=3, padding="same", activation=None),
+                kernel_size=3, padding="same", activation=None, name="regression_conv14b_depthwise"),
             tf.keras.layers.Conv2D(
-                filters=288, kernel_size=1, activation="relu")
-        ])
+                filters=288, kernel_size=1, activation="relu", name="regression_conv14b_conv1x1")
+        ], name="regression_conv14b")
 
         self.conv15 = tf.keras.models.Sequential([
-            BlazeBlock(block_num=7, channel=288, channel_padding=0),
-            BlazeBlock(block_num=7, channel=288, channel_padding=0)
-        ])
+            BlazeBlock(block_num=7, channel=288, channel_padding=0, name_prefix="regression_conv15a_"),
+            BlazeBlock(block_num=7, channel=288, channel_padding=0, name_prefix="regression_conv15b_")
+        ], name="regression_conv15")
 
         self.conv16 = tf.keras.models.Sequential([
             tf.keras.layers.GlobalAveragePooling2D(),
             # In: 1, 1, 1, 288
             tf.keras.layers.Dense(units=3*self.num_joints,
-                                  activation=None),
+                                  activation=None, name="regression_final_dense"),
             # tf.keras.layers.Reshape((self.num_joints, 3))
-        ])
+        ], name="regression_conv16")
 
     def build_model(self):
 

@@ -32,15 +32,19 @@ def train(config):
     train_phase = TrainPhase(train_config.get("train_phase", "UNKNOWN"))
     if train_phase == train_phase.HEATMAP:
         print("Freeze these layers:")
-        for layer in model.layers[16:]:
-            print(layer.name)
-            layer.trainable = False
+        for layer in model.layers:
+            if layer.name.startswith("regression"):
+                print(layer.name)
+                layer.trainable = False
     # Freeze heatmap branch when training regression
     elif train_phase == train_phase.REGRESSION:
         print("Freeze these layers:")
-        for layer in model.layers[:16]:
-            print(layer.name)
-            layer.trainable = False
+        for layer in model.layers:
+            if not layer.name.startswith("regression"):
+                print(layer.name)
+                layer.trainable = False
+
+    print(model.summary())
 
     loss_functions = {
         "heatmap": train_config["heatmap_loss"],
