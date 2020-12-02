@@ -22,7 +22,8 @@
     "train": {
         "train_phase":                  "HEATMAP",
         "heatmap_loss":                 "mean_squared_error",
-        "keypoint_loss":                "mean_squared_errpr",
+        "keypoint_loss":                "mean_squared_error",
+        "loss_weights":                 {"heatmap": 1.0, "joints": 0.0},
         "train_batch_size":             8,
         "val_batch_size":               8,
         "nb_epochs":                    200,
