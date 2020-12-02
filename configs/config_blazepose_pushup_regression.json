@@ -1,5 +1,5 @@
 {
-    "experiment_name":                  "blazepose_pushup",
+    "experiment_name":                  "blazepose_pushup_regression",
     "trainer":                          "blazepose_trainer",
     "data_loader":                      "pushup",      
     "data": {   
@@ -17,9 +17,12 @@
         "heatmap_height":               128,
         "heatmap_kp_sigma":             4,
         "num_joints":                   7,
-        "model_type":                  "TWO_HEAD"
+        "model_type":                   "TWO_HEAD"
     },
     "train": {
+        "train_phase":                  "REGRESSION",
+        "heatmap_loss":                 "mean_squared_error",
+        "keypoint_loss":                "mean_squared_errpr",
         "train_batch_size":             8,
         "val_batch_size":               8,
         "nb_epochs":                    200,

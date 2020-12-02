@@ -1,3 +1,6 @@
+import os
+import pathlib
+import shutil
 import argparse
 import importlib
 import json
@@ -17,5 +20,11 @@ args = parser.parse_args()
 with open(args.conf_file) as config_buffer:
     config = json.loads(config_buffer.read())
 
+# Create experiment folder and copy configuration file
+exp_folder = os.path.join("experiments", config["experiment_name"])
+pathlib.Path(exp_folder).mkdir(parents=True, exist_ok=True)
+shutil.copy(args.conf_file, exp_folder)
+
+# Train model
 trainer = importlib.import_module("src.trainers.{}".format(config["trainer"]))
 trainer.train(config)

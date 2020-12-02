@@ -6,6 +6,7 @@ import tensorflow as tf
 from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard
 
 from ..model_type import ModelType
+from ..train_phase import TrainPhase
 from ..models.blazepose import BlazePose
 
 def train(config):
@@ -23,12 +24,26 @@ def train(config):
     DataSequence = datalib.DataSequence
 
     # Initialize model
+    model_type = ModelType(model_config["model_type"])
     model = BlazePose(
-        model_config["num_joints"], ModelType(model_config["model_type"])).build_model()
+        model_config["num_joints"], model_type).build_model()
 
+    # Freeze regression branch when training heatmap
+    train_phase = TrainPhase(train_config.get("train_phase", "UNKNOWN"))
+    if train_phase == train_phase.HEATMAP:
+        print("Freeze these layers:")
+        for layer in model.layers[16:]:
+            print(layer.name)
+            layer.trainable = False
+    # Freeze heatmap branch when training regression
+    elif train_phase == train_phase.REGRESSION:
+        print("Freeze these layers:")
+        for layer in model.layers[:16]:
+            print(layer.name)
+            layer.trainable = False
 
     loss_functions = {
-        "heatmap": "binary_crossentropy",
+        "heatmap": "mean_squared_error",
         "joints": "mean_squared_error"
     }
     model.compile(optimizer=tf.optimizers.Adam(train_config["learning_rate"]),

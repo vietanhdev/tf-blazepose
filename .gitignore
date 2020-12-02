@@ -1,7 +1,7 @@
 *.pyc
 __pycache__
 /.vscode
-/experiments
+/experiments*
 !/experiments/.gitkeep
 /data
 !/data/.gitkeep
