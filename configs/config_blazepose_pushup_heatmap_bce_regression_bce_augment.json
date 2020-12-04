@@ -1,5 +1,5 @@
 {
-    "experiment_name":                  "blazepose_pushup_heatmap_mse",
+    "experiment_name":                  "blazepose_pushup_heatmap_bce_regression_bce_augment",
     "trainer":                          "blazepose_trainer",
     "data_loader":                      "pushup",      
     "data": {   
@@ -20,16 +20,16 @@
         "model_type":                  "TWO_HEAD"
     },
     "train": {
-        "train_phase":                  "HEATMAP",
-        "heatmap_loss":                 "mean_squared_error",
-        "keypoint_loss":                "mean_squared_error",
-        "loss_weights":                 {"heatmap": 1.0, "joints": 0.0},
+        "train_phase":                  "REGRESSION",
+        "heatmap_loss":                 "binary_crossentropy",
+        "keypoint_loss":                "binary_crossentropy",
+        "loss_weights":                 {"heatmap": 0.0, "joints": 1.0},
         "train_batch_size":             8,
         "val_batch_size":               8,
-        "nb_epochs":                    45,
+        "nb_epochs":                    200,
         "learning_rate":                1e-4,
-        "load_weights":                 false,
-        "pretrained_weights_path":      "models/model_to_load.h5"
+        "load_weights":                 true,
+        "pretrained_weights_path":      "experiments/blazepose_pushup_heatmap_bce_regression_bce/models/model_ep047.h5"
     },
     "test": {
         "model_file" :                 ""

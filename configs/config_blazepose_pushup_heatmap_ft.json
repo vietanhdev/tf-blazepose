@@ -1,5 +1,5 @@
 {
-    "experiment_name":                  "blazepose_pushup_heatmap_mse",
+    "experiment_name":                  "blazepose_pushup_heatmap_ft",
     "trainer":                          "blazepose_trainer",
     "data_loader":                      "pushup",      
     "data": {   
@@ -21,13 +21,13 @@
     },
     "train": {
         "train_phase":                  "HEATMAP",
-        "heatmap_loss":                 "mean_squared_error",
-        "keypoint_loss":                "mean_squared_error",
+        "heatmap_loss":                 "focal_tversky",
+        "keypoint_loss":                "binary_crossentropy",
         "loss_weights":                 {"heatmap": 1.0, "joints": 0.0},
-        "train_batch_size":             8,
-        "val_batch_size":               8,
-        "nb_epochs":                    45,
-        "learning_rate":                1e-4,
+        "train_batch_size":             16,
+        "val_batch_size":               16,
+        "nb_epochs":                    200,
+        "learning_rate":                1e-3,
         "load_weights":                 false,
         "pretrained_weights_path":      "models/model_to_load.h5"
     },

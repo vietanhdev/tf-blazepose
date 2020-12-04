@@ -9,6 +9,8 @@ from ..model_type import ModelType
 from ..train_phase import TrainPhase
 from ..models.blazepose import BlazePose
 
+from .losses import euclidean_distance_loss, focal_tversky
+
 def train(config):
     """Train model
 
@@ -50,6 +52,14 @@ def train(config):
         "heatmap": train_config["heatmap_loss"],
         "joints": train_config["keypoint_loss"]
     }
+    
+    # Replace all names with functions for custom losses
+    for k in loss_functions.keys():
+        if loss_functions[k] == "euclidean_distance_loss":
+            loss_functions[k] = euclidean_distance_loss
+        elif loss_functions[k] == "focal_tversky":
+            loss_functions[k] = focal_tversky
+    
     loss_weights = train_config["loss_weights"]
     model.compile(optimizer=tf.optimizers.Adam(train_config["learning_rate"]),
                   loss=loss_functions, loss_weights=loss_weights)

@@ -44,7 +44,7 @@ def render_joints(cvmat, joints, conf_th=0.2):
     return cvmat
 
 
-confth = 0.1
+confth = 0.05
 
 
 cap = cv2.VideoCapture(args.video)
