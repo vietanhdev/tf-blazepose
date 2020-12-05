@@ -9,7 +9,7 @@ from ..model_type import ModelType
 from ..train_phase import TrainPhase
 from ..models.blazepose import BlazePose
 
-from .losses import euclidean_distance_loss, focal_tversky
+from .losses import euclidean_distance_loss, focal_tversky, focal_loss
 
 def train(config):
     """Train model
@@ -61,6 +61,8 @@ def train(config):
             loss_functions[k] = focal_tversky
         elif loss_functions[k] == "huber":
             loss_functions[k] = tf.keras.losses.Huber()
+        elif loss_functions[k] == "focal":
+            loss_functions[k] = focal_loss(gamma=2, alpha=0.25)
 
     loss_weights = train_config["loss_weights"]
     model.compile(optimizer=tf.optimizers.Adam(train_config["learning_rate"]),
