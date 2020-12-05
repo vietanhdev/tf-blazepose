@@ -59,7 +59,9 @@ def train(config):
             loss_functions[k] = euclidean_distance_loss
         elif loss_functions[k] == "focal_tversky":
             loss_functions[k] = focal_tversky
-    
+        elif loss_functions[k] == "huber":
+            loss_functions[k] = tf.keras.losses.Huber()
+
     loss_weights = train_config["loss_weights"]
     model.compile(optimizer=tf.optimizers.Adam(train_config["learning_rate"]),
                   loss=loss_functions, loss_weights=loss_weights)

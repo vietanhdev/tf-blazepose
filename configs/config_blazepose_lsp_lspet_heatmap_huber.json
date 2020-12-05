@@ -1,5 +1,5 @@
 {
-    "experiment_name":                  "blazepose_lsp_lspet_heatmap_bce",
+    "experiment_name":                  "blazepose_lsp_lspet_heatmap_huber",
     "trainer":                          "blazepose_trainer",
     "data_loader":                      "custom",      
     "data": {   
@@ -22,7 +22,7 @@
     },
     "train": {
         "train_phase":                  "HEATMAP",
-        "heatmap_loss":                 "binary_crossentropy",
+        "heatmap_loss":                 "huber",
         "keypoint_loss":                "mean_squared_error",
         "loss_weights":                 {"heatmap": 1.0, "joints": 0.0},
         "train_batch_size":             16,
