@@ -57,3 +57,11 @@ Please update paths to LSP and LSPET in `tools/split_lsp_lspet.py` and run:
 ```
 python tools/split_lsp_lspet.py
 ```
+
+### III. PushUp dataset
+
+We have push-up 420 videos, divided in 3 sets:
+
++ Training: 8837 images from 317 videos.
++ Validation: 1189 images from 41 videos.
++ Test: 1013 images from 62 videos.

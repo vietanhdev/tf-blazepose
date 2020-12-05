@@ -1,23 +1,23 @@
 {
-    "experiment_name":                  "blazepose_lsp_lspet_heatmap_huber",
+    "experiment_name":                  "blazepose_lsp_lspet_pushup_heatmap_huber",
     "trainer":                          "blazepose_trainer",
     "data_loader":                      "custom",      
     "data": {   
-        "train_images":                 "data/lsp_lspet/images/",
-        "train_labels":                 "data/lsp_lspet/train.json",
-        "val_images":                   "data/lsp_lspet/images/",
-        "val_labels":                   "data/lsp_lspet/val.json",
-        "test_images":                  "data/lsp_lspet/images/",
-        "test_labels":                  "data/lsp_lspet/test.json",
-        "symmetry_point_ids":           [[8, 9], [7, 10], [6, 11], [2, 3], [1, 4], [0, 5]]
+        "train_images":                 "data/lsp_lspet_pushup/images/",
+        "train_labels":                 "data/lsp_lspet_pushup/train.json",
+        "val_images":                   "data/lsp_lspet_pushup/images/",
+        "val_labels":                   "data/lsp_lspet_pushup/val.json",
+        "test_images":                  "data/lsp_lspet_pushup/images/",
+        "test_labels":                  "data/lsp_lspet_pushup/test.json",
+        "symmetry_point_ids":           [[0,6], [1,5], [2,4]]
     },                   
     "model" : {
         "im_width":                     256,
         "im_height":                    256,
         "heatmap_width":                128,
         "heatmap_height":               128,
-        "heatmap_kp_sigma":             4,
-        "num_joints":                   14,
+        "heatmap_kp_sigma":             8,
+        "num_joints":                   7,
         "model_type":                  "TWO_HEAD"
     },
     "train": {
@@ -29,8 +29,8 @@
         "val_batch_size":               16,
         "nb_epochs":                    1000,
         "learning_rate":                1e-4,
-        "load_weights":                 true,
-        "pretrained_weights_path":      "experiments/blazepose_lsp_lspet_heatmap_huber/models/model_ep012.h5",
+        "load_weights":                 false,
+        "pretrained_weights_path":      "",
         "initial_epoch":                0
     },
     "test": {

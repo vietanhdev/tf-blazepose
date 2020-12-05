@@ -21,8 +21,8 @@ def load_aug():
             sometimes(iaa.Affine(
                 scale={"x": (0.9, 1.1), "y": (0.9, 1.1)},
                 translate_percent={"x": (-0.05, 0.05), "y": (-0.05, 0.05)},
-                rotate=(-20, 20),
-                shear=(-10, 10),
+                rotate=(-10, 10),
+                shear=(-5, 5),
                 order=[0, 1],
                 cval=(0, 255), # if mode is constant, use a cval between 0 and 255
                 mode=ia.ALL # use any of scikit-image's warping modes (see 2nd image from the top for examples)

@@ -73,7 +73,7 @@ while(True):
         mkps.append((_kp[0] * scale[1] * 2, _kp[1] * scale[0] * 2, _conf))
     cvmat = render_joints(origin_frame, mkps, confth)
 
-    # Draw regressed keypoint
+    # Draw regressed keypoints
     for p in regress_kps.reshape((-1, 3)):
         x = int(p[0] * cvmat.shape[1])
         y = int(p[1] * cvmat.shape[0])

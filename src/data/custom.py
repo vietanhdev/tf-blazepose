@@ -110,6 +110,17 @@ class DataSequence(Sequence):
         # Load landmark and apply square cropping for image
         landmark = data["points"]
         bbox = data["bbox"]
+        landmark = np.array(landmark)
+
+        # Generate visibility mask
+        # visible = inside image + not occluded by simulated rectangle
+        # (see BlazePose paper for more detail)
+        visibility = np.ones((landmark.shape[0], 1), dtype=int)
+        for i in range(len(visibility)):
+            if 0 > landmark[i][0] or landmark[i][0] >= image.shape[1] \
+                or 0 > landmark[i][1] or landmark[i][1] >= image.shape[0]:
+                visibility[i] = 0
+
         image, landmark = square_crop_with_keypoints(image, bbox, landmark, pad_value="random")
         landmark = np.array(landmark)
         
@@ -135,21 +146,13 @@ class DataSequence(Sequence):
 
         if self.augment:
             image, landmark = augment_img(image, landmark)
-
-        # Generate visibility mask
-        # visible = inside image + not occluded by simulated rectangle
-        # (see BlazePose paper for more detail)
-        landmark = landmark.reshape(-1, 2)
-        visibility = np.ones((landmark.shape[0], 1), dtype=int)
-        for i in range(len(visibility)):
-            if 0 > landmark[i][0] or landmark[i][0] >= self.input_size[0] \
-                or 0 > landmark[i][1] or landmark[i][1] >= self.input_size[1]:
-                visibility[i] = 0
         
         # Random occlusion
         # (see BlazePose paper for more detail)
-        image, visibility = random_occlusion(image, landmark, visibility=visibility,
-            rect_ratio=((0.2, 0.5), (0.2, 0.5)), rect_color="random")
+        if self.augment and random.random() < 0.2:
+            landmark = landmark.reshape(-1, 2)
+            image, visibility = random_occlusion(image, landmark, visibility=visibility,
+                rect_ratio=((0.2, 0.4), (0.2, 0.4)), rect_color="random")
 
         # Concatenate visibility into landmark
         visibility = np.array(visibility)
@@ -183,6 +186,7 @@ class DataSequence(Sequence):
                 visibility = joints[i, 2]
                 if visibility <= 0:
                     is_visible = False
-            if is_visible:
-                gtmap[:, :, i] = draw_labelmap(gtmap[:, :, i], joints[i, :], sigma)
+            gtmap[:, :, i] = draw_labelmap(gtmap[:, :, i], joints[i, :], sigma)
+            if not is_visible:
+                gtmap[:, :, i] *= 0.5
         return gtmap
