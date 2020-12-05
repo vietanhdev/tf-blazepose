@@ -12,17 +12,17 @@ Currently, the model being developed in this repo is based on TFLite (.tflite) f
 
     - [x] Initialize code for model from .tflite file.
 
-    - [ ] Complete dataset loader.
+    - [x] Basic dataset loader
 
-    - [ ] Implement loss function.
+    - [x] Implement loss function.
+
+    - [x] Implement training code.
+
+    - [ ] Implement testing code.
 
     - [ ] Integrate PCKH metric.
 
     - [ ] Implement PCKS metric for PushUp challenge.
-
-    - [ ] Implement training code.
-
-    - [ ] Implement testing code.
 
     - [ ] Add training graph and pretrained models.
 
@@ -34,11 +34,13 @@ Currently, the model being developed in this repo is based on TFLite (.tflite) f
 
 - [ ] Datasets
 
+    - [x] Support LSP and LSPET datasets.
+
+    - [x] Support PushUps dataset.
+
     - [ ] Support MPII dataset.
 
     - [ ] Support YOGA-82 dataset.
-
-    - [ ] Support PushUps dataset.
 
     - [ ] Custom dataset.
 
@@ -47,6 +49,19 @@ Currently, the model being developed in this repo is based on TFLite (.tflite) f
 - [ ] Convert and run model in TensorRT.
 
 - [ ] Convert and run model in Tensorflow.js.
+
+
+## Experiments
+
+### LSP + LSPET
+
+- Prepare dataset using instruction from [DATASET.md](DATASET.md).
+
+- Training heatmap branch:
+
+```
+python train.py -c configs/config_blazepose_lsp_lspet_heatmap.json
+```
 
 ## Reference
 

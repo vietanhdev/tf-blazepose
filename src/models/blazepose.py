@@ -124,7 +124,6 @@ class BlazePose():
             # In: 1, 1, 1, 288
             tf.keras.layers.Dense(units=3*self.num_joints,
                                   activation=None, name="regression_final_dense"),
-            # tf.keras.layers.Reshape((self.num_joints, 3))
         ], name="regression_conv16")
 
     def build_model(self):

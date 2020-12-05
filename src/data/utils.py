@@ -1,9 +1,6 @@
 import os
 import numpy as np
 import cv2
-import scipy.io as sio
-from math import cos, sin
-from imutils import face_utils
 
 def normalize_landmark_point(original_point, image_size):
     '''

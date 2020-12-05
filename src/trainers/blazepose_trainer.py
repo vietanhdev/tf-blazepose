@@ -103,6 +103,9 @@ def train(config):
         n_points=model_config["num_joints"],
         shuffle=False, augment=False, random_flip=False, random_rotate=False, random_scale_on_crop=False)
 
+    # Initial epoch. Use when continue training
+    initial_epoch = train_config.get("initial_epoch", 0)
+
     # Train
     model.fit(train_dataset,
               epochs=train_config["nb_epochs"],
@@ -110,6 +113,7 @@ def train(config):
               validation_data=val_dataset,
               validation_steps=len(val_dataset),
               callbacks=[tb, mc],
+              initial_epoch=initial_epoch,
               verbose=1)
 
 

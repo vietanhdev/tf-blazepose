@@ -1,0 +1,38 @@
+{
+    "experiment_name":                  "blazepose_lsp_lspet_heatmap_bce",
+    "trainer":                          "blazepose_trainer",
+    "data_loader":                      "custom",      
+    "data": {   
+        "train_images":                 "data/lsp_lspet/images/",
+        "train_labels":                 "data/lsp_lspet/train.json",
+        "val_images":                   "data/lsp_lspet/images/",
+        "val_labels":                   "data/lsp_lspet/val.json",
+        "test_images":                  "data/lsp_lspet/images/",
+        "test_labels":                  "data/lsp_lspet/test.json"
+    },                   
+    "model" : {
+        "im_width":                     256,
+        "im_height":                    256,
+        "heatmap_width":                128,
+        "heatmap_height":               128,
+        "heatmap_kp_sigma":             4,
+        "num_joints":                   14,
+        "model_type":                  "TWO_HEAD"
+    },
+    "train": {
+        "train_phase":                  "HEATMAP",
+        "heatmap_loss":                 "binary_crossentropy",
+        "keypoint_loss":                "mean_squared_error",
+        "loss_weights":                 {"heatmap": 1.0, "joints": 0.0},
+        "train_batch_size":             16,
+        "val_batch_size":               16,
+        "nb_epochs":                    200,
+        "learning_rate":                1e-4,
+        "load_weights":                 false,
+        "pretrained_weights_path":      "models/model_to_load.h5",
+        "initial_epoch":                0
+    },
+    "test": {
+        "model_file" :                 ""
+    }
+}
