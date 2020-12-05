@@ -10,8 +10,8 @@ class ChannelPadding(tf.keras.layers.Layer):
         self.pad_shape = tf.constant(
             [[0, 0], [0, 0], [0, 0], [0, self.channels - input_shapes[-1]]])
 
-    def call(self, input):
-        return tf.pad(input, self.pad_shape)
+    def call(self, x):
+        return tf.pad(x, self.pad_shape)
 
 
 class BlazeBlock(tf.keras.Model):
