@@ -21,8 +21,9 @@ parser.add_argument(
     '--model', default="model.h5",
     help='Path to h5 model')
 parser.add_argument(
-    '-c',
+    '-confidence',
     '--confidence',
+    default=0.05,
     help='Path to video file')
 parser.add_argument(
     '-v',
@@ -31,8 +32,10 @@ parser.add_argument(
 args = parser.parse_args()
 
 # Webcam
-if args.video == "video":
+if args.video == "webcam":
     args.video = 0
+
+confth = float(args.confidence)
 
 # Open and load the config json
 with open(args.conf_file) as config_buffer:
@@ -47,11 +50,7 @@ def render_joints(cvmat, joints, conf_th=0.2):
         _x, _y, _conf = _joint
         if _conf > conf_th:
             cv2.circle(cvmat, center=(int(_x), int(_y)), color=(255, 0, 0), radius=7, thickness=2)
-
     return cvmat
-
-
-confth = float(args.confidence)
 
 cap = cv2.VideoCapture(args.video)
 while(True):
