@@ -166,12 +166,6 @@ class DataSequence(Sequence):
 
         return image, landmark, gtmap
 
-    @classmethod
-    def get_kp_keys(cls):
-        keys = ['l_wrist', 'l_ankle', 'l_shoulder',
-                'head_top', 'r_shoulder', 'r_ankle',
-                'r_wrist']
-        return keys
 
     def generate_gtmap(self, joints, sigma, outres):
         npart = joints.shape[0]

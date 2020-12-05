@@ -7,13 +7,12 @@ import math
 import random
 import json
 
-from .utils import normalize_landmark, draw_labelmap, visualize_keypoints
-from ..utils.common import square_crop_with_keypoints, random_occlusion
+from .utils import normalize_landmark, unnormalize_landmark, draw_labelmap
 from .augmentation import augment_img
 
 class DataSequence(Sequence):
 
-    def __init__(self, image_folder, label_file, batch_size=8, input_size=(256, 256), output_heatmap=True, heatmap_size=(128, 128), heatmap_sigma=4, n_points=16, shuffle=True, augment=False, random_flip=False, random_rotate=False, random_scale_on_crop=False, symmetry_point_ids=None):
+    def __init__(self, image_folder, label_file, batch_size=8, input_size=(256, 256), output_heatmap=True, heatmap_size=(128, 128), heatmap_sigma=4, n_points=16, shuffle=True, augment=False, random_flip=False, random_rotate=False, random_scale_on_crop=False):
 
         self.batch_size = batch_size
         self.input_size = input_size
@@ -26,7 +25,6 @@ class DataSequence(Sequence):
         self.random_scale_on_crop = random_scale_on_crop
         self.augment = augment
         self.n_points = n_points
-        self.symmetry_point_ids = symmetry_point_ids
 
         with open(label_file, "r") as fp:
             self.anno = json.load(fp)
@@ -74,7 +72,6 @@ class DataSequence(Sequence):
         batch_landmark = self.preprocess_landmarks(batch_landmark)
 
         # # Prevent values from going outside [0, 1]
-        # # Only applied for sigmoid output
         # batch_landmark[batch_landmark < 0] = 0
         # batch_landmark[batch_landmark > 1] = 1
 
@@ -107,16 +104,14 @@ class DataSequence(Sequence):
         path = os.path.join(img_folder, data["image"])
         image = cv2.imread(path)
 
-        # Load landmark and apply square cropping for image
+        # Normalize landmark for ease of processing
+        # After this step, landmark points will have
+        # x and y in range of [0, 1]
         landmark = data["points"]
-        bbox = data["bbox"]
-        image, landmark = square_crop_with_keypoints(image, bbox, landmark, pad_value="random")
-        landmark = np.array(landmark)
+        landmark = normalize_landmark(landmark, (image.shape[1], image.shape[0]))
         
         # Resize image
-        old_img_size = np.array([image.shape[1], image.shape[0]])
-        image = cv2.resize(image, self.input_size)
-        landmark = (landmark * np.divide(np.array(self.input_size).astype(float), old_img_size)).astype(int)
+        image = cv2.resize(image, (self.input_size))
 
         # Horizontal flip
         # and update the order of landmark points
@@ -124,37 +119,20 @@ class DataSequence(Sequence):
             image = cv2.flip(image, 1)
 
             # Flip landmark
-            landmark[:, 0] = self.input_size[0] - landmark[:, 0]
+            landmark[:, 0] = 1 - landmark[:, 0]
 
             # Change the indices of landmark points and visibility
-            if self.symmetry_point_ids is not None:
-                for p1, p2 in self.symmetry_point_ids:
-                    l = landmark[p1, :].copy()
-                    landmark[p1, :] = landmark[p2, :].copy()
-                    landmark[p2, :] = l
+            symmetry_points = [[2, 4], [1, 5], [0, 6]]
+            for p1, p2 in symmetry_points:
+                l = landmark[p1]
+                landmark[p1] = landmark[p2]
+                landmark[p2] = l
+
+        # Unnormalize landmark points
+        landmark = unnormalize_landmark(landmark, self.input_size)
 
         if self.augment:
             image, landmark = augment_img(image, landmark)
-
-        # Generate visibility mask
-        # visible = inside image + not occluded by simulated rectangle
-        # (see BlazePose paper for more detail)
-        landmark = landmark.reshape(-1, 2)
-        visibility = np.ones((landmark.shape[0], 1), dtype=int)
-        for i in range(len(visibility)):
-            if 0 > landmark[i][0] or landmark[i][0] >= self.input_size[0] \
-                or 0 > landmark[i][1] or landmark[i][1] >= self.input_size[1]:
-                visibility[i] = 0
-        
-        # Random occlusion
-        # (see BlazePose paper for more detail)
-        image, visibility = random_occlusion(image, landmark, visibility=visibility,
-            rect_ratio=((0.2, 0.5), (0.2, 0.5)), rect_color="random")
-
-        # Concatenate visibility into landmark
-        visibility = np.array(visibility)
-        visibility = visibility.reshape((landmark.shape[0], 1))
-        landmark = np.hstack((landmark, visibility))
 
         # Generate heatmap
         gtmap = None
@@ -164,12 +142,26 @@ class DataSequence(Sequence):
                         * np.array(self.heatmap_size) / np.array(self.input_size)).astype(int)
             gtmap = self.generate_gtmap(gtmap_kps, self.heatmap_sigma, self.heatmap_size)
 
+        # Concatenate visibility into landmark
+        landmark = landmark.reshape(-1, 2)
+        visibility = np.array(data["visibility"])
+        visibility = visibility.reshape((landmark.shape[0], 1))
+        landmark = np.hstack((landmark, visibility))
+
         # Uncomment following lines to debug augmentation
-        draw = visualize_keypoints(image, landmark, visibility)
-        cv2.imshow("draw", draw)
-        if self.output_heatmap:
-            cv2.imshow("gtmap", gtmap.sum(axis=2))
-        cv2.waitKey(0)
+        # draw = image.copy()
+        # for i in range(len(landmark)):
+        #     x = int(landmark[i][0])
+        #     y = int(landmark[i][1])
+
+        #     draw = cv2.putText(draw, str(i), (int(x), int(y)), cv2.FONT_HERSHEY_SIMPLEX,
+        #             0.5, (255, 255, 255), 1, cv2.LINE_AA)
+        #     cv2.circle(draw, (int(x), int(y)), 1, (0,0,255))
+
+        # cv2.imshow("draw", draw)
+        # if self.output_heatmap:
+        #     cv2.imshow("gtmap", gtmap.sum(axis=2))
+        # cv2.waitKey(0)
 
         landmark = np.array(landmark)
         return image, landmark, gtmap

@@ -1,15 +1,14 @@
 {
-    "experiment_name":                  "blazepose_lsp_lspet_heatmap_bce",
+    "experiment_name":                  "blazepose_lsp_lspet_7points_heatmap_bce",
     "trainer":                          "blazepose_trainer",
-    "data_loader":                      "custom",      
+    "data_loader":                      "custom_7points",      
     "data": {   
-        "train_images":                 "data/lsp_lspet/images/",
-        "train_labels":                 "data/lsp_lspet/train.json",
-        "val_images":                   "data/lsp_lspet/images/",
-        "val_labels":                   "data/lsp_lspet/val.json",
-        "test_images":                  "data/lsp_lspet/images/",
-        "test_labels":                  "data/lsp_lspet/test.json",
-        "symmetry_point_ids":              [[8, 9], [7, 10], [6, 11], [2, 3], [1, 4], [0, 5]]
+        "train_images":                 "data/lsp_lspet_7points/images/",
+        "train_labels":                 "data/lsp_lspet_7points/train.json",
+        "val_images":                   "data/lsp_lspet_7points/images/",
+        "val_labels":                   "data/lsp_lspet_7points/val.json",
+        "test_images":                  "data/lsp_lspet_7points/images/",
+        "test_labels":                  "data/lsp_lspet_7points/test.json"
     },                   
     "model" : {
         "im_width":                     256,
@@ -17,7 +16,7 @@
         "heatmap_width":                128,
         "heatmap_height":               128,
         "heatmap_kp_sigma":             4,
-        "num_joints":                   14,
+        "num_joints":                   7,
         "model_type":                  "TWO_HEAD"
     },
     "train": {
@@ -27,7 +26,7 @@
         "loss_weights":                 {"heatmap": 1.0, "joints": 0.0},
         "train_batch_size":             16,
         "val_batch_size":               16,
-        "nb_epochs":                    200,
+        "nb_epochs":                    500,
         "learning_rate":                1e-4,
         "load_weights":                 false,
         "pretrained_weights_path":      "models/model_to_load.h5",

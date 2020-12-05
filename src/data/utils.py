@@ -143,3 +143,16 @@ def draw_labelmap(img, pt, sigma, type='Gaussian'):
 
     img[img_y[0]:img_y[1], img_x[0]:img_x[1]] = g[g_y[0]:g_y[1], g_x[0]:g_x[1]]
     return img
+
+
+def visualize_keypoints(image, keypoints, visibility=None):
+
+    draw = image.copy()
+    for i, p in enumerate(keypoints):
+        x, y = p[0], p[1]
+        color = (0, 0, 255) if visibility is not None and int(visibility[i]) else (255, 0, 0)
+        draw = cv2.circle(draw, center=(int(x), int(y)), color=color, radius=1, thickness=2)
+        draw = cv2.putText(draw, str(i), (int(x), int(y)), cv2.FONT_HERSHEY_SIMPLEX,
+                0.5, (0, 255, 0), 1, cv2.LINE_AA)
+
+    return draw

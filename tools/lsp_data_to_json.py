@@ -35,11 +35,25 @@ images.sort()
 
 # Build new annotations
 labels = []
+w_img_count = 0
 for i in range(len(images)):
     points = joints[i, :, :2]
     visibility = joints[i, :, 2]
+
+    wrong_label = False
+    for p in points:
+        if p[0] <= 0 or p[1] <= 0:
+            wrong_label = True
+            break
+    if wrong_label:
+        w_img_count += 1
+        print(w_img_count)
+        continue
+
     label = {"image": images[i], "points": points.tolist(), "visibility": visibility.tolist()}
     labels.append(label)
+
+print("Len: ", len(labels))
 
 with open(args.output_file, "w") as fp:
     json.dump(labels, fp)

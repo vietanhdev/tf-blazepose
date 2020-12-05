@@ -165,15 +165,6 @@ class DataSequence(Sequence):
 
         return cropimg, landmark, gtmap
 
-    @classmethod
-    def get_kp_keys(cls):
-        keys = ['r_ankle', 'r_knee', 'r_hip',
-                'l_hip', 'l_knee', 'l_ankle',
-                'plevis', 'thorax', 'upper_neck', 'head_top',
-                'r_wrist', 'r_elbow', 'r_shoulder',
-                'l_shoulder', 'l_elbow', 'l_wrist']
-        return keys
-
     def generate_gtmap(self, joints, sigma, outres):
         npart = joints.shape[0]
         gtmap = np.zeros(shape=(outres[0], outres[1], npart), dtype=float)

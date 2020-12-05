@@ -39,6 +39,7 @@ dataset_name/
 
 - The annotation contains x and y locations and a binary value indicating the visbility of joints.
 - Use `tools/lsp_data_to_json.py` to convert LSP and LSPET annotation files to json format:
+- **NOTE:** We removed 6061 images from LSPET dataset due to missing points.
 
 ```
 python tools/lsp_data_to_json.py --image_folder=data/lsp_dataset/images --input_file data/lsp_dataset/joints.mat --output_file data/lsp_dataset/labels.json
@@ -47,9 +48,9 @@ python tools/lsp_data_to_json.py --image_folder=data/lspet_dataset/images --inpu
 
 #### 2. Merge 2 dataset and divide into subsets
 
-+ Training: 9000 from LSPET and 1600 from LSP.
-+ Validation: 500 from LSPET and 200 from LSP.
-+ Test: 500 from LSPET and 200 from LSP.
++ Training: 3739 from LSPET and 1800 from LSP.
++ Validation: 100 from LSPET and 100 from LSP.
++ Test: 100 from LSPET and 100 from LSP.
 
 Please update paths to LSP and LSPET in `tools/split_lsp_lspet.py` and run:
 

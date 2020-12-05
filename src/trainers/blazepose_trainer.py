@@ -92,6 +92,7 @@ def train(config):
         heatmap_size=(model_config["heatmap_width"], model_config["heatmap_height"]),
         heatmap_sigma=model_config["heatmap_kp_sigma"],
         n_points=model_config["num_joints"],
+        symmetry_point_ids=config["data"]["symmetry_point_ids"],
         shuffle=True, augment=True, random_flip=True, random_rotate=True, random_scale_on_crop=True)
     val_dataset = DataSequence(
         config["data"]["val_images"],
@@ -101,6 +102,7 @@ def train(config):
         heatmap_size=(model_config["heatmap_width"], model_config["heatmap_height"]),
         heatmap_sigma=model_config["heatmap_kp_sigma"],
         n_points=model_config["num_joints"],
+        symmetry_point_ids=config["data"]["symmetry_point_ids"],
         shuffle=False, augment=False, random_flip=False, random_rotate=False, random_scale_on_crop=False)
 
     # Initial epoch. Use when continue training

@@ -7,6 +7,10 @@ import pathlib
 import json
 import shutil
 import random
+import cv2
+import numpy as np
+
+from src.utils.common import calculate_bbox_from_keypoints, square_crop_with_keypoints, random_occlusion
 
 class DatasetCreator:
     def __init__(self, root_folder):
@@ -46,8 +50,9 @@ class DatasetCreator:
             random.seed(42)
             random.shuffle(labels)
 
-        for i, label in enumerate(labels):
+        for label in labels:
 
+            # Copy images
             if copy_images:
 
                 # Rename image if duplicated
@@ -71,11 +76,59 @@ class DatasetCreator:
                         os.path.join(image_folder, label["image"]),
                         os.path.join(self.image_folder, label["image"]),
                     )
+                    pass
+
+            label["bbox"] = calculate_bbox_from_keypoints(label["points"])
+            label["bbox"] = np.array(label["bbox"]).astype(int).tolist()
+        
+        # # Visualize
+        # for label in labels:
+        #     image = cv2.imread(os.path.join(self.image_folder, label["image"]))
+
+        #     draw = image.copy()
+        #     for i, p in enumerate(label["points"]):
+        #         x, y = p
+        #         color = (0, 0, 255) if int(label["visibility"][i]) else (255, 0, 0)
+        #         draw = cv2.circle(draw, center=(int(x), int(y)), color=color, radius=1, thickness=2)
+        #         draw = cv2.putText(draw, str(i), (int(x), int(y)), cv2.FONT_HERSHEY_SIMPLEX,
+        #                 0.5, (0, 255, 0), 1, cv2.LINE_AA)
+        #     p1 = tuple(label["bbox"][0])
+        #     p2 = tuple(label["bbox"][1])
+        #     draw = cv2.rectangle(draw, p1, p2, (0,0,255), 2)
+        #     cv2.imshow("Image", draw)
+        #     # cv2.waitKey(0)
+
+        #     cropped_image, keypoints = square_crop_with_keypoints(image, label["bbox"], label["points"], "random")
+        #     draw = cropped_image.copy()
+        #     for i, p in enumerate(keypoints):
+        #         x, y = p
+        #         color = (0, 0, 255) if int(label["visibility"][i]) else (255, 0, 0)
+        #         draw = cv2.circle(draw, center=(int(x), int(y)), color=color, radius=1, thickness=2)
+        #         draw = cv2.putText(draw, str(i), (int(x), int(y)), cv2.FONT_HERSHEY_SIMPLEX,
+        #                 0.5, (0, 255, 0), 1, cv2.LINE_AA)
+
+        #     cv2.imshow("Square cropped", draw)
+        #     # cv2.waitKey(0)
+
+        #     # Test random occlusion
+        #     cropped_image, visibility = random_occlusion(cropped_image, keypoints, visibility=None, rect_ratio=((0.2, 0.5), (0.2, 0.5)))
+        #     draw = cropped_image.copy()
+        #     for i, p in enumerate(keypoints):
+        #         print(i)
+        #         print(visibility[i])
+        #         x, y = p
+        #         color = (0, 0, 255) if int(visibility[i]) else (255, 0, 0)
+        #         draw = cv2.circle(draw, center=(int(x), int(y)), color=color, radius=1, thickness=2)
+        #         draw = cv2.putText(draw, str(i), (int(x), int(y)), cv2.FONT_HERSHEY_SIMPLEX,
+        #                 0.5, (0, 255, 0), 1, cv2.LINE_AA)
+
+        #     cv2.imshow("Random occlusion", draw)
+        #     cv2.waitKey(0)
 
         self.save_label("train.json", labels[:n_train])
         self.save_label("val.json", labels[n_train:n_train+n_val])
         self.save_label("test.json", labels[n_train+n_val:])
 
 dataset = DatasetCreator("data/lsp_lspet")
-dataset.add_set("data/lsp_dataset/images", "data/lsp_dataset/labels.json", 1600, 200, 200)
-dataset.add_set("data/lspet_dataset/images", "data/lspet_dataset/labels.json", 9000, 500, 500)
+dataset.add_set("data/lsp_dataset/images", "data/lsp_dataset/labels.json", 1800, 100, 100)
+dataset.add_set("data/lspet_dataset/images", "data/lspet_dataset/labels.json", 3739, 100, 100)

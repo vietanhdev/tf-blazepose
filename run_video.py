@@ -66,7 +66,7 @@ while(True):
     regress_kps, out = model.predict(input_x)
     kps = post_process_heatmap(out[0, :, :, :])
 
-    kp_keys = DataSequence.get_kp_keys()
+    kp_keys = list(map(str, range(len(kps))))
     mkps = list()
     for i, _kp in enumerate(kps):
         _conf = _kp[2]
