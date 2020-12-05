@@ -51,10 +51,8 @@ def random_occlusion(image, keypoints, visibility=None, rect_ratio=None, rect_co
         rect_ratio = ((0.2, 0.5), (0.2, 0.5))
 
     im_height, im_width = image.shape[:2]
-    print(image.shape[:2])
     rect_width = int(im_width * random.uniform(*rect_ratio[0]))
     rect_height = int(im_height * random.uniform(*rect_ratio[1]))
-    print(rect_width, rect_height)
     rect_x = random.randint(0, im_width - rect_width)
     rect_y = random.randint(0, im_height - rect_height)
 

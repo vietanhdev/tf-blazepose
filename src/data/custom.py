@@ -165,11 +165,11 @@ class DataSequence(Sequence):
             gtmap = self.generate_gtmap(gtmap_kps, self.heatmap_sigma, self.heatmap_size)
 
         # Uncomment following lines to debug augmentation
-        draw = visualize_keypoints(image, landmark, visibility)
-        cv2.imshow("draw", draw)
-        if self.output_heatmap:
-            cv2.imshow("gtmap", gtmap.sum(axis=2))
-        cv2.waitKey(0)
+        # draw = visualize_keypoints(image, landmark, visibility)
+        # cv2.imshow("draw", draw)
+        # if self.output_heatmap:
+        #     cv2.imshow("gtmap", gtmap.sum(axis=2))
+        # cv2.waitKey(0)
 
         landmark = np.array(landmark)
         return image, landmark, gtmap
