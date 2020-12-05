@@ -18,6 +18,8 @@ Currently, the model being developed in this repo is based on TFLite (.tflite) f
 
     - [x] Implement training code.
 
+    - [x] Advanced augmentation: Random occlusion (BlazePose paper)
+
     - [ ] Implement testing code.
 
     - [ ] Integrate PCKH metric.
@@ -34,7 +36,7 @@ Currently, the model being developed in this repo is based on TFLite (.tflite) f
 
 - [ ] Datasets
 
-    - [x] Support LSP and LSPET datasets.
+    - [x] Support LSP dataset and LSPET dataset (partially). [More](DATASET.md).
 
     - [x] Support PushUps dataset.
 
@@ -60,7 +62,7 @@ Currently, the model being developed in this repo is based on TFLite (.tflite) f
 - Training heatmap branch:
 
 ```
-python train.py -c configs/config_blazepose_lsp_lspet_heatmap.json
+python train.py -c configs/config_blazepose_lsp_lspet_heatmap_bce.json
 ```
 
 ## Reference
