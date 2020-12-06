@@ -10,6 +10,7 @@ from ..train_phase import TrainPhase
 from ..models.blazepose import BlazePose
 
 from .losses import euclidean_distance_loss, focal_tversky, focal_loss
+from .pck import PCK
 
 def train(config):
     """Train model
@@ -65,8 +66,9 @@ def train(config):
             loss_functions[k] = focal_loss(gamma=2, alpha=0.25)
 
     loss_weights = train_config["loss_weights"]
+    pck_metric = PCK()
     model.compile(optimizer=tf.optimizers.Adam(train_config["learning_rate"]),
-                  loss=loss_functions, loss_weights=loss_weights)
+                  loss=loss_functions, loss_weights=loss_weights, metrics=[pck_metric])
 
 
     # Load pretrained model

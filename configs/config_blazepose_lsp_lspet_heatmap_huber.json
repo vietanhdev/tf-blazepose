@@ -29,8 +29,8 @@
         "val_batch_size":               16,
         "nb_epochs":                    1000,
         "learning_rate":                1e-4,
-        "load_weights":                 true,
-        "pretrained_weights_path":      "experiments/blazepose_lsp_lspet_heatmap_huber/models/model_ep012.h5",
+        "load_weights":                 false,
+        "pretrained_weights_path":      "",
         "initial_epoch":                0
     },
     "test": {

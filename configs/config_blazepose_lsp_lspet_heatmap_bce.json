@@ -17,7 +17,7 @@
         "heatmap_width":                128,
         "heatmap_height":               128,
         "heatmap_kp_sigma":             4,
-        "num_keypoints":                   14,
+        "num_keypoints":                14,
         "model_type":                  "TWO_HEAD"
     },
     "train": {
@@ -29,8 +29,8 @@
         "val_batch_size":               16,
         "nb_epochs":                    1000,
         "learning_rate":                1e-5,
-        "load_weights":                 true,
-        "pretrained_weights_path":      "experiments/blazepose_lsp_lspet_heatmap_bce/models/model_ep076.h5",
+        "load_weights":                 false,
+        "pretrained_weights_path":      "",
         "initial_epoch":                0
     },
     "test": {

@@ -17,7 +17,7 @@
         "heatmap_width":                128,
         "heatmap_height":               128,
         "heatmap_kp_sigma":             8,
-        "num_keypoints":                   7,
+        "num_keypoints":                7,
         "model_type":                  "TWO_HEAD"
     },
     "train": {

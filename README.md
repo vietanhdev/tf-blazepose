@@ -20,11 +20,13 @@ Currently, the model being developed in this repo is based on TFLite (.tflite) f
 
     - [x] Advanced augmentation: Random occlusion (BlazePose paper)
 
+    - [x] Implement demo code for video and webcam.
+
+    - [x] Support PCK metric.
+
     - [ ] Implement testing code.
 
-    - [ ] Integrate PCKH metric.
 
-    - [ ] Implement PCKS metric for PushUp challenge.
 
     - [ ] Add training graph and pretrained models.
 
@@ -33,6 +35,8 @@ Currently, the model being developed in this repo is based on TFLite (.tflite) f
     - [ ] Experiment with other loss functions.
 
     - [ ] Workout counting from keypoints.
+
+    - [ ] Rewrite in eager mode.
 
 - [ ] Datasets
 
