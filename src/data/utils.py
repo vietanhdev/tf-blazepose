@@ -1,4 +1,5 @@
 import os
+import random
 import numpy as np
 import cv2
 
@@ -156,3 +157,32 @@ def visualize_keypoints(image, keypoints, visibility=None):
                 0.5, (0, 255, 0), 1, cv2.LINE_AA)
 
     return draw
+
+
+def add_vertical_reflection(image, keypoints, min_height=0.1):
+    """Add vertical reflection
+
+    Args:
+        image: Input image
+        keypoints: Keypoints
+        min_height [int]: Min height ratio of reflection (over image height)
+
+    Return:
+        Augmented image
+    """
+
+    im_height = image.shape[0]
+    max_y = np.max(np.array(keypoints)[:, 1])
+    reflection_height = min(im_height - max_y - 1, max_y)
+
+    if reflection_height < min_height * im_height:
+        return image
+
+    alpha = random.uniform(0.5, 0.9)
+    beta = (1.0 - alpha)
+    image[max_y:max_y+reflection_height,:,:] = cv2.addWeighted(image[max_y:max_y+reflection_height,:,:],
+                                                                alpha,
+                                                                cv2.flip(image[max_y-reflection_height:max_y,:,:], 0),
+                                                                beta, 0.0)
+
+    return image

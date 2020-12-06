@@ -1,7 +1,8 @@
-import numpy as np
-import cv2
+import random
 import imgaug as ia
+import numpy as np
 from imgaug import augmenters as iaa
+from .utils import add_vertical_reflection
 
 seq = [None]
 
@@ -27,14 +28,15 @@ def load_aug():
                 cval=(0, 255), # if mode is constant, use a cval between 0 and 255
                 mode=ia.ALL # use any of scikit-image's warping modes (see 2nd image from the top for examples)
             )),
+            iaa.Sometimes(0.1, iaa.MotionBlur(k=15, angle=[-45, 45])),
             # execute 0 to 5 of the following (less important) augmenters per image
             # don't execute all of them, as that would often be way too strong
             iaa.SomeOf((0, 5),
                 [
                     iaa.OneOf([
-                        iaa.GaussianBlur((0, 3.0)), # blur images with a sigma between 0 and 3.0
-                        iaa.AverageBlur(k=(2, 5)), # blur image using local means with kernel sizes between 2 and 7
-                        iaa.MedianBlur(k=(3, 5)), # blur image using local medians with kernel sizes between 2 and 7
+                        iaa.GaussianBlur((0, 3.0)),
+                        iaa.AverageBlur(k=(2, 5)),
+                        iaa.MedianBlur(k=(3, 5)),
                     ]),
                     iaa.Sharpen(alpha=(0, 1.0), lightness=(0.75, 1.5)), # sharpen images
                     iaa.AdditiveGaussianNoise(loc=0, scale=(0.0, 0.05*255), per_channel=0.5), # add gaussian noise to images
@@ -72,6 +74,10 @@ def augment_img(image, landmark=None):
             [image]), keypoints=np.array([landmark]))
         image_aug = image_aug[0]
         landmark = landmark[0]
+
+        # Simulate reflection
+        if random.random() < 0.1:
+            image_aug = add_vertical_reflection(image_aug, landmark)
 
         # draw = image_aug.copy()
         # for i in range(landmark.shape[0]):
