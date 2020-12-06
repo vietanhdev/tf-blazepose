@@ -27,48 +27,30 @@ def calculate_bbox_from_keypoints(kps, padding=0.2):
     return [[x1, y1], [x2, y2]]
 
 
-def random_occlusion(image, keypoints, visibility=None, rect_ratio=None, rect_color="random"):
-    """Generate random rectangle to occlude points
-        From BlazePose paper: "To support the prediction of invisible points, we simulate occlusions (random
-        rectangles filled with various colors) during training and introduce a per-point
-        visibility classifier that indicates whether a particular point is occluded and
-        if the position prediction is deemed inaccurate."
+def square_padding(im, desired_size=800, return_padding=False):
 
-    Args:
-        image: Input image
-        keypoints: Keypoints in format [[x1, y1], [x2, y2], ...]
-        visibility [list]: List of visibilities of keypoints. 0: occluded by rectangle, 1: visible
-        rect_ratio: Rect ratio wrt image width and height. Format ((min_width, max_width), (min_height, max_height))
-                    Example: ((0.2, 0.5), (0.2, 0.5))
-        rect_color: Scalar indicating color to fill in the rectangle
+    old_size = im.shape[:2]  # old_size is in (height, width) format
 
-    Return:
-        image: Generated image
-        visibility [list]: List of visibilities of keypoints. 0: occluded by rectangle, 1: visible
-    """
+    ratio = float(desired_size) / max(old_size)
+    new_size = tuple([int(x*ratio) for x in old_size])
 
-    if rect_ratio is None:
-        rect_ratio = ((0.2, 0.5), (0.2, 0.5))
+    im = cv2.resize(im, (new_size[1], new_size[0]))
 
-    im_height, im_width = image.shape[:2]
-    rect_width = int(im_width * random.uniform(*rect_ratio[0]))
-    rect_height = int(im_height * random.uniform(*rect_ratio[1]))
-    rect_x = random.randint(0, im_width - rect_width)
-    rect_y = random.randint(0, im_height - rect_height)
+    delta_w = desired_size - new_size[1]
+    delta_h = desired_size - new_size[0]
+    top, bottom = delta_h // 2, delta_h - (delta_h // 2)
+    left, right = delta_w // 2, delta_w - (delta_w // 2)
 
-    gen_image = image.copy()
-    if rect_color == "random":
-        rect_color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-    gen_image = cv2.rectangle(gen_image, (rect_x, rect_y), (rect_x + rect_width, rect_y + rect_height), rect_color, -1)
+    color = [0, 0, 0]
+    new_im = cv2.copyMakeBorder(im, top, bottom, left, right, cv2.BORDER_CONSTANT,
+                                value=color)
 
-    if visibility is None:
-        visibility = [1] * len(keypoints)
-    for i in range(len(visibility)):
-        if rect_x < keypoints[i][0] and keypoints[i][0] < rect_x + rect_width \
-            and rect_y < keypoints[i][1] and keypoints[i][1] < rect_y + rect_height:
-            visibility[i] = 0
-
-    return gen_image, visibility
+    if not return_padding:
+        return new_im
+    else:
+        h, w = new_im.shape[:2]
+        padding = (top / h, left / w, bottom / h, right / w)
+        return new_im, padding
 
 
 def square_crop_with_keypoints(image, bbox, keypoints, pad_value=0):

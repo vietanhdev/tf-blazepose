@@ -5,10 +5,10 @@ from .blazepose_layers import BlazeBlock
 
 
 class BlazePose():
-    def __init__(self, num_joints: int, model_type: ModelType = ModelType.REGRESSION):
+    def __init__(self, num_keypoints: int, model_type: ModelType = ModelType.REGRESSION):
 
         self.model_type = model_type
-        self.num_joints = num_joints
+        self.num_keypoints = num_keypoints
         self.conv1 = tf.keras.layers.Conv2D(
             filters=24, kernel_size=3, strides=(2, 2), padding='same', activation='relu'
         )
@@ -84,7 +84,7 @@ class BlazePose():
                 filters=8, kernel_size=1, activation="relu"),
             # heatmap
             tf.keras.layers.Conv2D(
-                filters=self.num_joints, kernel_size=3, padding="same", activation=None)
+                filters=self.num_keypoints, kernel_size=3, padding="same", activation=None)
         ])
 
         # === Regression ===
@@ -122,7 +122,7 @@ class BlazePose():
         self.conv16 = tf.keras.models.Sequential([
             tf.keras.layers.GlobalAveragePooling2D(),
             # In: 1, 1, 1, 288
-            tf.keras.layers.Dense(units=3*self.num_joints,
+            tf.keras.layers.Dense(units=3*self.num_keypoints,
                                   activation=None, name="regression_final_dense"),
         ], name="regression_conv16")
 

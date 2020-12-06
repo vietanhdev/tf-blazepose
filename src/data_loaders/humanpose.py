@@ -1,18 +1,23 @@
-import os
-import numpy as np
-import cv2
-import random
-from tensorflow.keras.utils import Sequence
-import math
-import random
 import json
+import math
+import os
+import random
 
-from .utils import normalize_landmark, unnormalize_landmark, draw_labelmap
+import cv2
+import numpy as np
+from tensorflow.keras.utils import Sequence
+
+from ..utils.heatmap import gen_gt_heatmap
+from ..utils.keypoints import normalize_landmark
+from ..utils.pre_processing import square_crop_with_keypoints
+from ..utils.visualizer import visualize_keypoints
 from .augmentation import augment_img
+from .augmentation_utils import random_occlusion
+
 
 class DataSequence(Sequence):
 
-    def __init__(self, image_folder, label_file, batch_size=8, input_size=(256, 256), output_heatmap=True, heatmap_size=(128, 128), heatmap_sigma=4, n_points=16, shuffle=True, augment=False, random_flip=False, random_rotate=False, random_scale_on_crop=False):
+    def __init__(self, image_folder, label_file, batch_size=8, input_size=(256, 256), output_heatmap=True, heatmap_size=(128, 128), heatmap_sigma=4, n_points=16, shuffle=True, augment=False, random_flip=False, random_rotate=False, random_scale_on_crop=False, symmetry_point_ids=None):
 
         self.batch_size = batch_size
         self.input_size = input_size
@@ -25,6 +30,7 @@ class DataSequence(Sequence):
         self.random_scale_on_crop = random_scale_on_crop
         self.augment = augment
         self.n_points = n_points
+        self.symmetry_point_ids = symmetry_point_ids
 
         with open(label_file, "r") as fp:
             self.anno = json.load(fp)
@@ -38,7 +44,6 @@ class DataSequence(Sequence):
         :return: The number of batches in the Sequence.
         """
         return math.floor(len(self.anno) / float(self.batch_size))
-        
 
     def __getitem__(self, idx):
         """
@@ -47,7 +52,8 @@ class DataSequence(Sequence):
         :return: batches of image and the corresponding mask
         """
 
-        batch_data = self.anno[idx * self.batch_size: (1 + idx) * self.batch_size]
+        batch_data = self.anno[idx *
+                               self.batch_size: (1 + idx) * self.batch_size]
 
         batch_image = []
         batch_landmark = []
@@ -72,6 +78,7 @@ class DataSequence(Sequence):
         batch_landmark = self.preprocess_landmarks(batch_landmark)
 
         # # Prevent values from going outside [0, 1]
+        # # Only applied for sigmoid output
         # batch_landmark[batch_landmark < 0] = 0
         # batch_landmark[batch_landmark > 1] = 1
 
@@ -104,14 +111,29 @@ class DataSequence(Sequence):
         path = os.path.join(img_folder, data["image"])
         image = cv2.imread(path)
 
-        # Normalize landmark for ease of processing
-        # After this step, landmark points will have
-        # x and y in range of [0, 1]
+        # Load landmark and apply square cropping for image
         landmark = data["points"]
-        landmark = normalize_landmark(landmark, (image.shape[1], image.shape[0]))
-        
+        bbox = data["bbox"]
+        landmark = np.array(landmark)
+
+        # Generate visibility mask
+        # visible = inside image + not occluded by simulated rectangle
+        # (see BlazePose paper for more detail)
+        visibility = np.ones((landmark.shape[0], 1), dtype=int)
+        for i in range(len(visibility)):
+            if 0 > landmark[i][0] or landmark[i][0] >= image.shape[1] \
+                    or 0 > landmark[i][1] or landmark[i][1] >= image.shape[0]:
+                visibility[i] = 0
+
+        image, landmark = square_crop_with_keypoints(
+            image, bbox, landmark, pad_value="random")
+        landmark = np.array(landmark)
+
         # Resize image
-        image = cv2.resize(image, (self.input_size))
+        old_img_size = np.array([image.shape[1], image.shape[0]])
+        image = cv2.resize(image, self.input_size)
+        landmark = (
+            landmark * np.divide(np.array(self.input_size).astype(float), old_img_size)).astype(int)
 
         # Horizontal flip
         # and update the order of landmark points
@@ -119,45 +141,41 @@ class DataSequence(Sequence):
             image = cv2.flip(image, 1)
 
             # Flip landmark
-            landmark[:, 0] = 1 - landmark[:, 0]
+            landmark[:, 0] = self.input_size[0] - landmark[:, 0]
 
             # Change the indices of landmark points and visibility
-            symmetry_points = [[2, 4], [1, 5], [0, 6]]
-            for p1, p2 in symmetry_points:
-                l = landmark[p1]
-                landmark[p1] = landmark[p2]
-                landmark[p2] = l
-
-        # Unnormalize landmark points
-        landmark = unnormalize_landmark(landmark, self.input_size)
+            if self.symmetry_point_ids is not None:
+                for p1, p2 in self.symmetry_point_ids:
+                    l = landmark[p1, :].copy()
+                    landmark[p1, :] = landmark[p2, :].copy()
+                    landmark[p2, :] = l
 
         if self.augment:
             image, landmark = augment_img(image, landmark)
+
+        # Random occlusion
+        # (see BlazePose paper for more detail)
+        if self.augment and random.random() < 0.2:
+            landmark = landmark.reshape(-1, 2)
+            image, visibility = random_occlusion(image, landmark, visibility=visibility,
+                                                 rect_ratio=((0.2, 0.4), (0.2, 0.4)), rect_color="random")
+
+        # Concatenate visibility into landmark
+        visibility = np.array(visibility)
+        visibility = visibility.reshape((landmark.shape[0], 1))
+        landmark = np.hstack((landmark, visibility))
 
         # Generate heatmap
         gtmap = None
         if self.output_heatmap:
             gtmap_kps = landmark.copy()
             gtmap_kps[:, :2] = (np.array(gtmap_kps[:, :2]).astype(float)
-                        * np.array(self.heatmap_size) / np.array(self.input_size)).astype(int)
-            gtmap = self.generate_gtmap(gtmap_kps, self.heatmap_sigma, self.heatmap_size)
-
-        # Concatenate visibility into landmark
-        landmark = landmark.reshape(-1, 2)
-        visibility = np.array(data["visibility"])
-        visibility = visibility.reshape((landmark.shape[0], 1))
-        landmark = np.hstack((landmark, visibility))
+                                * np.array(self.heatmap_size) / np.array(self.input_size)).astype(int)
+            gtmap = gen_gt_heatmap(
+                gtmap_kps, self.heatmap_sigma, self.heatmap_size)
 
         # Uncomment following lines to debug augmentation
-        # draw = image.copy()
-        # for i in range(len(landmark)):
-        #     x = int(landmark[i][0])
-        #     y = int(landmark[i][1])
-
-        #     draw = cv2.putText(draw, str(i), (int(x), int(y)), cv2.FONT_HERSHEY_SIMPLEX,
-        #             0.5, (255, 255, 255), 1, cv2.LINE_AA)
-        #     cv2.circle(draw, (int(x), int(y)), 1, (0,0,255))
-
+        # draw = visualize_keypoints(image, landmark, visibility)
         # cv2.imshow("draw", draw)
         # if self.output_heatmap:
         #     cv2.imshow("gtmap", gtmap.sum(axis=2))
@@ -165,16 +183,3 @@ class DataSequence(Sequence):
 
         landmark = np.array(landmark)
         return image, landmark, gtmap
-
-    def generate_gtmap(self, joints, sigma, outres):
-        npart = joints.shape[0]
-        gtmap = np.zeros(shape=(outres[0], outres[1], npart), dtype=float)
-        for i in range(npart):
-            is_visible = True
-            if len(joints[0]) > 2:
-                visibility = joints[i, 2]
-                if visibility <= 0:
-                    is_visible = False
-            if is_visible:
-                gtmap[:, :, i] = draw_labelmap(gtmap[:, :, i], joints[i, :], sigma)
-        return gtmap

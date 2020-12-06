@@ -4,8 +4,8 @@ import json
 import cv2
 import numpy as np
 from src.trainers.blazepose_trainer import load_model
-from src.utils.heatmap_process import post_process_heatmap
-from src.data.mpii import DataSequence
+from src.utils.heatmap import post_process_heatmap
+from src.utils.visualizer import visualize_keypoints
 import tensorflow as tf
 
 for gpu in tf.config.experimental.list_physical_devices('GPU'):
@@ -45,45 +45,49 @@ with open(args.conf_file) as config_buffer:
 trainer = importlib.import_module("src.trainers.{}".format(config["trainer"]))
 model = trainer.load_model(config, args.model)
 
-def render_joints(cvmat, joints, conf_th=0.2):
-    for _joint in joints:
-        _x, _y, _conf = _joint
-        if _conf > conf_th:
-            cv2.circle(cvmat, center=(int(_x), int(_y)), color=(255, 0, 0), radius=7, thickness=2)
-    return cvmat
+# Dataloader
+datalib = importlib.import_module("src.data_loaders.{}".format(config["data_loader"]))
+DataSequence = datalib.DataSequence
 
 cap = cv2.VideoCapture(args.video)
+cv2.namedWindow("Result", cv2.WINDOW_NORMAL)
 while(True):
-    # Capture frame-by-frame
+
     ret, origin_frame = cap.read()
 
-    scale = (origin_frame.shape[0] * 1.0 / 256, origin_frame.shape[1] * 1.0 / 256)
+    scale = np.array([float(origin_frame.shape[1]) / config["model"]["im_width"],
+                float(origin_frame.shape[0]) / config["model"]["im_height"]], dtype=float)
 
-    frame = origin_frame
-    imgdata = cv2.resize(frame, (256, 256))
-    input_x = DataSequence.preprocess_images(np.array([imgdata]))
+    img = cv2.resize(origin_frame, (config["model"]["im_width"], config["model"]["im_height"]))
+    input_x = DataSequence.preprocess_images(np.array([img]))
 
-    regress_kps, out = model.predict(input_x)
-    kps = post_process_heatmap(out[0, :, :, :])
+    regress_kps, heatmap = model.predict(input_x)
+    heatmap_kps = post_process_heatmap(heatmap[0, :, :, :])
+    heatmap_kps = np.array(heatmap_kps)
 
-    kp_keys = list(map(str, range(len(kps))))
-    mkps = list()
-    for i, _kp in enumerate(kps):
-        _conf = _kp[2]
-        mkps.append((_kp[0] * scale[1] * 2, _kp[1] * scale[0] * 2, _conf))
-    cvmat = render_joints(origin_frame, mkps, confth)
+    # Scale heatmap keypoint
+    heatmap_stride = np.array([config["model"]["im_width"] / config["model"]["heatmap_width"],
+                            config["model"]["im_height"] / config["model"]["heatmap_height"]], dtype=float)
+    heatmap_kps[:, :2] = heatmap_kps[:, :2] * scale * heatmap_stride
 
-    # Draw regressed keypoints
-    for p in regress_kps.reshape((-1, 3)):
-        x = int(p[0] * cvmat.shape[1])
-        y = int(p[1] * cvmat.shape[0])
-        cv2.circle(cvmat, center=(x, y), color=(0, 0, 255), radius=7, thickness=2)
-    cv2.imshow('frame', cvmat)
+    # Filter heatmap keypoint by confidence
+    for i in range(len(heatmap_kps)):
+        if heatmap_kps[i, 2] < confth:
+            heatmap_kps[i, :2] = [0,0]
 
-    out = np.sum(out[0], axis=2)
-    out = cv2.resize(out, None, fx=3, fy=3)
-    out = out * 1.5
-    cv2.imshow('heatmap', out)
+    # Scale regression keypoint
+    regress_kps = regress_kps.reshape((-1, 3))
+    regress_kps[:, :2] = regress_kps[:, :2] * np.array([origin_frame.shape[1], origin_frame.shape[0]])
+
+    draw = origin_frame.copy()
+    draw = visualize_keypoints(draw, regress_kps[:, :2], point_color=(0, 255, 0), text_color=(255, 0, 0))
+    draw = visualize_keypoints(draw, heatmap_kps[:, :2], point_color=(0, 255, 0), text_color=(0, 0, 255))
+    cv2.imshow('Result', draw)
+
+    heatmap = np.sum(heatmap[0], axis=2)
+    heatmap = cv2.resize(heatmap, None, fx=3, fy=3)
+    heatmap = heatmap * 1.5
+    cv2.imshow('Heatmap', heatmap)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 

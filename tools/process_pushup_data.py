@@ -5,7 +5,7 @@ import shutil
 import random
 import cv2
 import numpy as np
-from src.utils.common import calculate_bbox_from_keypoints, square_crop_with_keypoints, random_occlusion
+from src.utils.pre_processing import calculate_bbox_from_keypoints, square_crop_with_keypoints, random_occlusion
 
 
 label_files = list(os.listdir("data/pushup/labels"))

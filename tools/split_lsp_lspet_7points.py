@@ -10,7 +10,9 @@ import random
 import cv2
 import numpy as np
 
-from src.utils.common import calculate_bbox_from_keypoints, square_crop_with_keypoints, random_occlusion
+from src.utils.pre_processing import calculate_bbox_from_keypoints, square_crop_with_keypoints
+from src.data_loaders.augmentation_utils import random_occlusion
+
 
 class DatasetCreator:
     def __init__(self, root_folder):

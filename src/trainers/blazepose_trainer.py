@@ -22,13 +22,13 @@ def train(config):
     model_config = config["model"]
 
     # Dataloader
-    datalib = importlib.import_module("src.data.{}".format(config["data_loader"]))
+    datalib = importlib.import_module("src.data_loaders.{}".format(config["data_loader"]))
     DataSequence = datalib.DataSequence
 
     # Initialize model
     model_type = ModelType(model_config["model_type"])
     model = BlazePose(
-        model_config["num_joints"], model_type).build_model()
+        model_config["num_keypoints"], model_type).build_model()
 
     # Freeze regression branch when training heatmap
     train_phase = TrainPhase(train_config.get("train_phase", "UNKNOWN"))
@@ -95,7 +95,7 @@ def train(config):
         input_size=(model_config["im_width"], model_config["im_height"]),
         heatmap_size=(model_config["heatmap_width"], model_config["heatmap_height"]),
         heatmap_sigma=model_config["heatmap_kp_sigma"],
-        n_points=model_config["num_joints"],
+        n_points=model_config["num_keypoints"],
         symmetry_point_ids=config["data"]["symmetry_point_ids"],
         shuffle=True, augment=True, random_flip=True, random_rotate=True, random_scale_on_crop=True)
     val_dataset = DataSequence(
@@ -105,7 +105,7 @@ def train(config):
         input_size=(model_config["im_width"], model_config["im_height"]),
         heatmap_size=(model_config["heatmap_width"], model_config["heatmap_height"]),
         heatmap_sigma=model_config["heatmap_kp_sigma"],
-        n_points=model_config["num_joints"],
+        n_points=model_config["num_keypoints"],
         symmetry_point_ids=config["data"]["symmetry_point_ids"],
         shuffle=False, augment=False, random_flip=False, random_rotate=False, random_scale_on_crop=False)
 
@@ -134,7 +134,7 @@ def load_model(config, model_path):
     model_config = config["model"]
 
     # Initialize model and load weights
-    model = BlazePose(model_config["num_joints"], ModelType(model_config["model_type"])).build_model()
+    model = BlazePose(model_config["num_keypoints"], ModelType(model_config["model_type"])).build_model()
     model.compile()
     model.load_weights(model_path)
 

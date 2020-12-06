@@ -1,7 +1,7 @@
 {
     "experiment_name":                  "blazepose_lsp_lspet_heatmap_bce",
     "trainer":                          "blazepose_trainer",
-    "data_loader":                      "custom",      
+    "data_loader":                      "humanpose",      
     "data": {   
         "train_images":                 "data/lsp_lspet/images/",
         "train_labels":                 "data/lsp_lspet/train.json",
@@ -17,7 +17,7 @@
         "heatmap_width":                128,
         "heatmap_height":               128,
         "heatmap_kp_sigma":             4,
-        "num_joints":                   14,
+        "num_keypoints":                   14,
         "model_type":                  "TWO_HEAD"
     },
     "train": {
