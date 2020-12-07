@@ -34,6 +34,7 @@
         "initial_epoch":                0
     },
     "test": {
-        "model_file" :                 ""
+        "pck_ref_points_idxs" :         [12, 13],
+        "pck_thresh":                   0.5
     }
 }

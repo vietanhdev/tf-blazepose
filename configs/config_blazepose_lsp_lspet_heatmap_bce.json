@@ -28,12 +28,13 @@
         "train_batch_size":             16,
         "val_batch_size":               16,
         "nb_epochs":                    1000,
-        "learning_rate":                1e-5,
+        "learning_rate":                1e-4,
         "load_weights":                 false,
         "pretrained_weights_path":      "",
         "initial_epoch":                0
     },
     "test": {
-        "model_file" :                 ""
+        "pck_ref_points_idxs" :         [12, 13],
+        "pck_thresh":                   0.5
     }
 }

@@ -30,10 +30,11 @@
         "nb_epochs":                    1000,
         "learning_rate":                1e-4,
         "load_weights":                 true,
-        "pretrained_weights_path":      "/mnt/DATA/PUSHUP_PROJECT/tf-blazepose/experiments/blazepose_lsp_lspet_pushup_heatmap_bce/models/model_ep136.h5",
-        "initial_epoch":                0
+        "pretrained_weights_path":      "experiments/blazepose_lsp_lspet_pushup_heatmap_bce_regress_huber/models/model_ep207.h5",
+        "initial_epoch":                207
     },
     "test": {
-        "model_file" :                 ""
+        "pck_ref_points_idxs" :         [2, 4],
+        "pck_thresh":                   0.2
     }
 }
