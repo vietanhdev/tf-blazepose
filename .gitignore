@@ -6,3 +6,5 @@ __pycache__
 /data
 !/data/.gitkeep
 /.vscode
+/trained_models
+!/trained_models/.gitkeep

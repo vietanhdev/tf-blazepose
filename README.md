@@ -59,15 +59,31 @@ Currently, the model being developed in this repo is based on TFLite (.tflite) f
 
 ## Experiments
 
-### LSP + LSPET
+**NOTE:** Currently, I only focus on PushUp dataset. Due to the copyright of this dataset, I don't have permission to publish it on the Internet. You can read the instruction and try with your own dataset.
 
 - Prepare dataset using instruction from [DATASET.md](DATASET.md).
 
 - Training heatmap branch:
 
 ```
-python train.py -c configs/config_blazepose_lsp_lspet_heatmap_bce.json
+python train.py -c configs/config_blazepose_lsp_lspet_pushup_heatmap_bce.json
 ```
+
+- After heatmap branch converged, set `load_weights` to `true` and update the `pretrained_weights_path` to the best model, and continue with the regression branch:
+
+```
+python train.py -c configs/config_blazepose_lsp_lspet_pushup_heatmap_bce_regress_mse.json
+```
+
+## Demo
+
+- Download pretrained model for PushUp dataset [here](https://drive.google.com/file/d/1UH8ajVOJgnQ71Svqj_YXl9OrA_6oGsxI/view?usp=sharing) and put into `trained_models/heatmap_bce_regress_mse.h5`. Test with your webcam:
+
+```
+python run_video.py -c configs/config_blazepose_lsp_lspet_pushup_heatmap_bce_regress_mse.json -m trained_models/heatmap_bce_regress_mse.h5 -v webcam
+```
+
+The pretrained model is only in experimental state now. It only detects 7 keypoints for Push Up counting and it may not produce a good result now. I will update other models in the future.
 
 ## Reference
 
