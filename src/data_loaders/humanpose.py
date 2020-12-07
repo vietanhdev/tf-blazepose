@@ -155,7 +155,7 @@ class DataSequence(Sequence):
 
         # Random occlusion
         # (see BlazePose paper for more detail)
-        if self.augment and random.random() < 0.2:
+        if self.augment and random.random() < 0.3:
             landmark = landmark.reshape(-1, 2)
             image, visibility = random_occlusion(image, landmark, visibility=visibility,
                                                  rect_ratio=((0.2, 0.4), (0.2, 0.4)), rect_color="random")
@@ -175,7 +175,8 @@ class DataSequence(Sequence):
                 gtmap_kps, self.heatmap_sigma, self.heatmap_size)
 
         # Uncomment following lines to debug augmentation
-        # draw = visualize_keypoints(image, landmark, visibility)
+        # draw = visualize_keypoints(image, landmark, visibility, text_color=(0,0,255))
+        # cv2.namedWindow("draw", cv2.WINDOW_NORMAL)
         # cv2.imshow("draw", draw)
         # if self.output_heatmap:
         #     cv2.imshow("gtmap", gtmap.sum(axis=2))
