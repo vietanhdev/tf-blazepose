@@ -1,36 +1,7 @@
 import tensorflow as tf
 import numpy as np
 
-
-@tf.function
-def nms(heat, kernel=3):
-    hmax = tf.nn.max_pool2d(heat, kernel, 1, padding='SAME')
-    keep = tf.cast(tf.equal(heat, hmax), tf.float32)
-    return heat*keep
-
-
-@tf.function
-def find_keypoints(batch_heatmaps):
-    batch, height, width, n_points = tf.shape(batch_heatmaps)[0], tf.shape(
-        batch_heatmaps)[1], tf.shape(batch_heatmaps)[2], tf.shape(batch_heatmaps)[3]
-
-    batch_heatmaps = nms(batch_heatmaps)
-
-    flat_tensor = tf.reshape(batch_heatmaps, (batch, -1, n_points))
-
-    # Argmax of the flat tensor
-    argmax = tf.cast(tf.argmax(flat_tensor, axis=1), tf.int32)
-
-    # Convert indexes into 2D coordinates
-    argmax_x = argmax // width
-    argmax_y = argmax % width
-
-    # Shape: batch * 2 * n_points
-    batch_keypoints = tf.stack((argmax_x, argmax_y), axis=1)
-    # Shape: batch * n_points * 2
-    batch_keypoints = tf.transpose(batch_keypoints, [0, 2, 1])
-
-    return batch_keypoints
+from ..utils.heatmap import find_keypoints_from_heatmap
 
 
 @tf.function
@@ -43,7 +14,6 @@ def calc_pck(batch_keypoints_true, batch_keypoints_pred, ref_point_pair=(3, 5), 
         ref_distance, tf.float32) * thresh
     n_wrongs = tf.reduce_sum(tf.cast(wrong_matrix, tf.float32))
     return tf.cast(n_wrongs, tf.float32), tf.cast(tf.size(batch_keypoints_true), tf.float32)
-
 
 class PCK(tf.keras.metrics.Metric):
 
@@ -61,8 +31,8 @@ class PCK(tf.keras.metrics.Metric):
     def update_state(self, y_true, y_pred, sample_weight=None):
 
         if len(tf.shape(y_true)) == 4:  # Heatmap
-            batch_keypoints_pred = find_keypoints(y_pred)
-            batch_keypoints_true = find_keypoints(y_true)
+            batch_keypoints_pred = find_keypoints_from_heatmap(y_pred)[:, :, :2]
+            batch_keypoints_true = find_keypoints_from_heatmap(y_true)[:, :, :2]
         elif len(tf.shape(y_true)) == 2:  # Regression
             batch_keypoints_pred = tf.reshape(
                 y_pred, (tf.shape(y_pred)[0], -1, 3))[:, :, :2]

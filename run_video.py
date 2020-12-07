@@ -3,8 +3,7 @@ import importlib
 import json
 import cv2
 import numpy as np
-from src.trainers.blazepose_trainer import load_model
-from src.utils.heatmap import post_process_heatmap
+from src.utils.heatmap import find_keypoints_from_heatmap
 from src.utils.visualizer import visualize_keypoints
 import tensorflow as tf
 
@@ -62,7 +61,7 @@ while(True):
     input_x = DataSequence.preprocess_images(np.array([img]))
 
     regress_kps, heatmap = model.predict(input_x)
-    heatmap_kps = post_process_heatmap(heatmap[0, :, :, :])
+    heatmap_kps = find_keypoints_from_heatmap(heatmap)[0]
     heatmap_kps = np.array(heatmap_kps)
 
     # Scale heatmap keypoint

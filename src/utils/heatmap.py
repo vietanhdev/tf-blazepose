@@ -1,5 +1,6 @@
 from scipy.ndimage import gaussian_filter, maximum_filter
 import numpy as np
+import tensorflow as tf
 
 
 def gen_point_heatmap(img, pt, sigma, type='Gaussian'):
@@ -73,32 +74,36 @@ def gen_gt_heatmap(keypoints, sigma, heatmap_size):
     return gtmap
 
 
-def post_process_heatmap(heatmap):
-    """Post process heatmap for keypoints
-
-    Args:
-        heatmap (np.array): Heatmap
-
-    Returns:
-        kplst: Keypoints in format [(x1, y1, confidence1), (x2, y2, confidence2), ...]
-    """
-    kplst = list()
-    for i in range(heatmap.shape[-1]):
-        hmap = heatmap[:, :, i]
-        hmap = gaussian_filter(hmap, sigma=0.5)
-        nms_peaks = non_max_supression(hmap, window_size=3, threshold=1e-6)
-
-        y, x = np.where(nms_peaks == nms_peaks.max())
-        if len(x) > 0 and len(y) > 0:
-            kplst.append((int(x[0]), int(y[0]), nms_peaks[y[0], x[0]]))
-        else:
-            kplst.append((0, 0, 0))
-    return kplst
+@tf.function
+def nms(heat, kernel=3):
+    hmax = tf.nn.max_pool2d(heat, kernel, 1, padding='SAME')
+    keep = tf.cast(tf.equal(heat, hmax), tf.float32)
+    return heat*keep
 
 
-def non_max_supression(plain, window_size=3, threshold=1e-6):
-    """Non-max supression for heatmap"""
-    # clear value less than threshold
-    under_th_indices = plain < threshold
-    plain[under_th_indices] = 0
-    return plain * (plain == maximum_filter(plain, footprint=np.ones((window_size, window_size))))
+@tf.function
+def find_keypoints_from_heatmap(batch_heatmaps):
+    batch, height, width, n_points = tf.shape(batch_heatmaps)[0], tf.shape(
+        batch_heatmaps)[1], tf.shape(batch_heatmaps)[2], tf.shape(batch_heatmaps)[3]
+
+    batch_heatmaps = nms(batch_heatmaps)
+
+    flat_tensor = tf.reshape(batch_heatmaps, (batch, -1, n_points))
+
+    # Argmax of the flat tensor
+    argmax = tf.argmax(flat_tensor, axis=1)
+    argmax = tf.cast(argmax, tf.int32)
+    scores = tf.math.reduce_max(flat_tensor, axis=1)
+
+    # Convert indexes into 2D coordinates
+    argmax_y = argmax // width
+    argmax_x = argmax % width
+    argmax_y = tf.cast(argmax_y, tf.float32)
+    argmax_x = tf.cast(argmax_x, tf.float32)
+
+    # Shape: batch * 3 * n_points
+    batch_keypoints = tf.stack((argmax_x, argmax_y, scores), axis=1)
+    # Shape: batch * n_points * 3
+    batch_keypoints = tf.transpose(batch_keypoints, [0, 2, 1])
+
+    return batch_keypoints
