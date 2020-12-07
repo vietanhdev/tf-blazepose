@@ -58,7 +58,17 @@ Please update paths to LSP and LSPET in `tools/split_lsp_lspet.py` and run:
 python tools/split_lsp_lspet.py
 ```
 
-### III. PushUp dataset
+
+### III. MPII Humanpose
+
+- We only use images with numOtherPeople = 0. The original dataset are divided into 3 subsets:
+
++ Training: 9503 images.
++ Validation: 1000 images.
++ Test: 1000 images.
+
+
+### IV. PushUp dataset
 
 We have push-up 420 videos, divided in 3 sets:
 

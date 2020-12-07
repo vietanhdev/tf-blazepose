@@ -140,8 +140,19 @@ class DataSequence(Sequence):
         if self.random_flip and random.choice([0, 1]):
             image = cv2.flip(image, 1)
 
+            # Mark missing keypoints
+            missing_idxs = []
+            for i in range(landmark.shape[0]):
+                if landmark[i, 0] == -1 and landmark[i, 1] == -1:
+                    missing_idxs.append(i)
+
             # Flip landmark
             landmark[:, 0] = self.input_size[0] - landmark[:, 0]
+
+            # Restore missing keypoints
+            for i in missing_idxs:
+                landmark[i, 0] = -1
+                landmark[i, 1] = -1
 
             # Change the indices of landmark points and visibility
             if self.symmetry_point_ids is not None:
@@ -155,10 +166,10 @@ class DataSequence(Sequence):
 
         # Random occlusion
         # (see BlazePose paper for more detail)
-        if self.augment and random.random() < 0.3:
+        if self.augment and random.random() < 0.2:
             landmark = landmark.reshape(-1, 2)
             image, visibility = random_occlusion(image, landmark, visibility=visibility,
-                                                 rect_ratio=((0.2, 0.4), (0.2, 0.4)), rect_color="random")
+                                                 rect_ratio=((0.2, 0.5), (0.2, 0.5)), rect_color="random")
 
         # Concatenate visibility into landmark
         visibility = np.array(visibility)

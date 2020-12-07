@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 import random
 
-def calculate_bbox_from_keypoints(kps, padding=0.2):
+def calculate_bbox_from_keypoints(kps, padding=0.1):
     """Estimate body bounding box from all body keypoints
 
     Args:
@@ -103,10 +103,21 @@ def square_crop_with_keypoints(image, bbox, keypoints, pad_value=0):
 
     cropped_image = padded_image[bbox[0][1]:bbox[1][1], bbox[0][0]:bbox[1][0]]
 
-    # Update keypoints
+    # Mark missing keypoints
     keypoints = np.array(keypoints)
+    missing_idxs = []
+    for i in range(keypoints.shape[0]):
+        if keypoints[i, 0] == -1 and keypoints[i, 1] == -1:
+            missing_idxs.append(i)
+
+    # Update keypoints
     keypoints[:, 0] = keypoints[:, 0] - bbox[0][0] + pad_left
     keypoints[:, 1] = keypoints[:, 1] - bbox[0][1] + pad_top
+
+    # Restore missing keypoints
+    for i in missing_idxs:
+        keypoints[i, 0] = -1
+        keypoints[i, 1] = -1
 
     return cropped_image, keypoints
 

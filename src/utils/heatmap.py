@@ -57,7 +57,7 @@ def gen_gt_heatmap(keypoints, sigma, heatmap_size):
         heatmap_size: Heatmap size in format (width, height)
 
     Returns:
-        [type]: [description]
+        Generated heatmap
     """
     npart = keypoints.shape[0]
     gtmap = np.zeros(shape=(heatmap_size[1], heatmap_size[0], npart), dtype=float)
@@ -65,7 +65,7 @@ def gen_gt_heatmap(keypoints, sigma, heatmap_size):
         is_visible = True
         if len(keypoints[0]) > 2:
             visibility = keypoints[i, 2]
-            if visibility <= 0:
+            if visibility <= 0 or (keypoints[i, 0] == -1 and keypoints[i, 1] == -1):
                 is_visible = False
         gtmap[:, :, i] = gen_point_heatmap(
             gtmap[:, :, i], keypoints[i, :], sigma)

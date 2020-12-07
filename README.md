@@ -26,8 +26,6 @@ Currently, the model being developed in this repo is based on TFLite (.tflite) f
 
     - [ ] Implement testing code.
 
-
-
     - [ ] Add training graph and pretrained models.
 
     - [ ] Support offset maps.
@@ -44,7 +42,7 @@ Currently, the model being developed in this repo is based on TFLite (.tflite) f
 
     - [x] Support PushUps dataset.
 
-    - [ ] Support MPII dataset.
+    - [x] Support MPII dataset.
 
     - [ ] Support YOGA-82 dataset.
 
