@@ -35,6 +35,6 @@
     },
     "test": {
         "pck_ref_points_idxs" :         [2, 4],
-        "pck_thresh":                   0.23
+        "pck_thresh":                   0.25
     }
 }

@@ -2,7 +2,7 @@
 
 This is an implementation of Google BlazePose in Tensorflow 2.x. The original paper is "BlazePose: On-device Real-time Body Pose tracking" by Valentin Bazarevsky, Ivan Grishchenko, Karthik Raveendran, Tyler Zhu, Fan Zhang, and Matthias Grundmann, which is available on [arXiv](https://arxiv.org/abs/2006.10204). You can find some demonstrations of BlazePose from [Google blog](https://ai.googleblog.com/2020/08/on-device-real-time-body-pose-tracking.html).
 
-Currently, the model being developed in this repo is based on TFLite (.tflite) file from [here](https://github.com/google/mediapipe/blob/master/mediapipe/modules/pose_landmark/pose_landmark_upper_body.tflite). I use [Netron.app](https://netron.app/) to visualize the architecture and try to mimic that architecture in my implementation. The visualized model architecture can be found [here](pose_landmark_upper_body.tflite.png). Other architectures will be considered in the future.
+Currently, the model being developed in this repo is based on TFLite (.tflite) model from [here](https://github.com/PINTO0309/PINTO_model_zoo/tree/master/058_BlazePose_Full_Keypoints/01_Accurate). I use [Netron.app](https://netron.app/) to visualize the architecture and try to mimic that architecture in my implementation. The visualized model architecture can be found [here](images/blazepose_full.png). Other architectures will be added in the future.
 
 **Note:** This repository is still under active development.
 
