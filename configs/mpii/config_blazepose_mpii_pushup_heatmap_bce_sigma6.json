@@ -1,5 +1,5 @@
 {
-    "experiment_name":                  "blazepose_mpii_pushup_heatmap_bce",
+    "experiment_name":                  "blazepose_mpii_pushup_heatmap_bce_s6",
     "trainer":                          "blazepose_trainer",
     "data_loader":                      "humanpose",      
     "data": {   
@@ -16,9 +16,9 @@
         "im_height":                    256,
         "heatmap_width":                128,
         "heatmap_height":               128,
-        "heatmap_kp_sigma":             4,
+        "heatmap_kp_sigma":             6,
         "num_keypoints":                7,
-        "model_type":                  "TWO_HEAD"
+        "model_type":                  "SIGMOID_HEATMAP_SIGMOID_REGRESS_TWO_HEAD"
     },
     "train": {
         "train_phase":                  "HEATMAP",

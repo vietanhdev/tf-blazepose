@@ -1,13 +1,11 @@
 import tensorflow as tf
 from tensorflow.keras.models import Model
-from ..model_type import ModelType
 from .blazepose_layers import BlazeBlock
 
 
 class BlazePose():
-    def __init__(self, num_keypoints: int, model_type: ModelType = ModelType.REGRESSION):
+    def __init__(self, num_keypoints: int):
 
-        self.model_type = model_type
         self.num_keypoints = num_keypoints
         self.conv1 = tf.keras.layers.Conv2D(
             filters=24, kernel_size=3, strides=(2, 2), padding='same', activation='relu'
@@ -126,23 +124,21 @@ class BlazePose():
                                   activation=None, name="regression_final_dense"),
         ], name="regression_conv16")
 
-    def build_model(self):
+    def build_model(self, model_type):
 
         input_x = tf.keras.layers.Input(shape=(256, 256, 3))
 
+        # Block 1
         # In: 1x256x256x3
-        # Out: 1x128x128x24
         x = self.conv1(input_x)
 
         # Block 2
         # In: 1x128x128x24
-        # Out: 1x128x128x24
         x = x + self.conv2_1(x)
         x = tf.keras.activations.relu(x)
 
         # Block 3
         # In: 1x128x128x24
-        # Out: 1x128x128x24
         x = x + self.conv2_2(x)
         y0 = tf.keras.activations.relu(x)
 
@@ -166,7 +162,7 @@ class BlazePose():
         # === Regression ===
 
         # Stop gradient for regression on 2-head model
-        if self.model_type == ModelType.TWO_HEAD:
+        if model_type == "TWO_HEAD":
             x = tf.keras.backend.stop_gradient(x)
             y2 = tf.keras.backend.stop_gradient(y2)
             y3 = tf.keras.backend.stop_gradient(y3)
@@ -183,11 +179,11 @@ class BlazePose():
         joints = self.conv16(x)
         joints = tf.keras.layers.Activation("sigmoid", name="joints")(joints)
 
-        if self.model_type == ModelType.TWO_HEAD:
+        if model_type == "TWO_HEAD":
             return Model(inputs=input_x, outputs=[joints, heatmap])
-        elif self.model_type == ModelType.HEATMAP:
+        elif model_type == "HEATMAP":
             return Model(inputs=input_x, outputs=heatmap)
-        elif self.model_type == ModelType.REGRESSION:
+        elif model_type == "REGRESSION":
             return Model(inputs=input_x, outputs=joints)
         else:
             raise ValueError("Wrong model type.")

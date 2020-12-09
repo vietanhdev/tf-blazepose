@@ -1,0 +1,22 @@
+from .blazepose_legacy import BlazePose as BlazePoseLegacy
+from .blazepose_full import BlazePose as BlazePoseFull
+
+
+class ModelCreator():
+
+    @staticmethod
+    def create_model(model_name, n_points):
+
+        if model_name == "SIGMOID_HEATMAP_SIGMOID_REGRESS_TWO_HEAD":
+            return BlazePoseLegacy(n_points).build_model("TWO_HEAD")
+        elif model_name == "SIGMOID_HEATMAP_SIGMOID_REGRESS_HEATMAP":
+            return BlazePoseLegacy(n_points).build_model("HEATMAP")
+        elif model_name == "SIGMOID_HEATMAP_SIGMOID_REGRESS_REGRESSION":
+            return BlazePoseLegacy(n_points).build_model("REGRESSION")
+
+        elif model_name == "SIGMOID_HEATMAP_LINEAR_REGRESS_TWO_HEAD":
+            return BlazePoseFull(n_points).build_model("TWO_HEAD")
+        elif model_name == "SIGMOID_HEATMAP_LINEAR_REGRESS_HEATMAP":
+            return BlazePoseFull(n_points).build_model("HEATMAP")
+        elif model_name == "SIGMOID_HEATMAP_LINEAR_REGRESS_REGRESSION":
+            return BlazePoseFull(n_points).build_model("REGRESSION")

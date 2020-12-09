@@ -1,5 +1,6 @@
 {
-    "experiment_name":                  "blazepose_lsp_lspet_heatmap_huber",
+    "experiment_name":                  "blazepose_lsp_lspet_heatmap_bce",
+    "model"
     "trainer":                          "blazepose_trainer",
     "data_loader":                      "humanpose",      
     "data": {   
@@ -16,21 +17,21 @@
         "im_height":                    256,
         "heatmap_width":                128,
         "heatmap_height":               128,
-        "heatmap_kp_sigma":             4,
-        "num_keypoints":                   14,
+        "heatmap_kp_sigma":             8,
+        "num_keypoints":                14,
         "model_type":                  "TWO_HEAD"
     },
     "train": {
         "train_phase":                  "HEATMAP",
-        "heatmap_loss":                 "huber",
+        "heatmap_loss":                 "binary_crossentropy",
         "keypoint_loss":                "mean_squared_error",
         "loss_weights":                 {"heatmap": 1.0, "joints": 0.0},
-        "train_batch_size":             16,
-        "val_batch_size":               16,
+        "train_batch_size":             8,
+        "val_batch_size":               8,
         "nb_epochs":                    1000,
-        "learning_rate":                1e-4,
-        "load_weights":                 false,
-        "pretrained_weights_path":      "",
+        "learning_rate":                1e-5,
+        "load_weights":                 true,
+        "pretrained_weights_path":      "/mnt/DATA/PUSHUP_PROJECT/tf-blazepose/experiments/blazepose_lsp_lspet_heatmap_bce/models/model_ep076.h5",
         "initial_epoch":                0
     },
     "test": {

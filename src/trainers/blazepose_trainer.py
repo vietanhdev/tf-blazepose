@@ -5,9 +5,8 @@ import importlib
 import tensorflow as tf
 from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard
 
-from ..model_type import ModelType
 from ..train_phase import TrainPhase
-from ..models.blazepose import BlazePose
+from ..models import ModelCreator
 
 from .losses import euclidean_distance_loss, focal_tversky, focal_loss
 from .pck import get_pck_metric
@@ -28,9 +27,7 @@ def train(config):
     DataSequence = datalib.DataSequence
 
     # Initialize model
-    model_type = ModelType(model_config["model_type"])
-    model = BlazePose(
-        model_config["num_keypoints"], model_type).build_model()
+    model = ModelCreator.create_model(model_config["model_type"], model_config["num_keypoints"])
 
     # Freeze regression branch when training heatmap
     train_phase = TrainPhase(train_config.get("train_phase", "UNKNOWN"))
@@ -137,7 +134,7 @@ def load_model(config, model_path):
     model_config = config["model"]
 
     # Initialize model and load weights
-    model = BlazePose(model_config["num_keypoints"], ModelType(model_config["model_type"])).build_model()
+    model = ModelCreator.create_model(model_config["model_type"], model_config["num_keypoints"])
     model.compile()
     model.load_weights(model_path)
 
