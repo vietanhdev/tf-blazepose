@@ -97,7 +97,9 @@ def train(config):
         heatmap_sigma=model_config["heatmap_kp_sigma"],
         n_points=model_config["num_keypoints"],
         symmetry_point_ids=config["data"]["symmetry_point_ids"],
-        shuffle=True, augment=True, random_flip=True, random_rotate=True, random_scale_on_crop=True)
+        shuffle=True, augment=True, random_flip=True, random_rotate=True,
+        clip_landmark=train_config["keypoint_loss"] == "binary_crossentropy",
+        random_scale_on_crop=True)
     val_dataset = DataSequence(
         config["data"]["val_images"],
         config["data"]["val_labels"],
@@ -107,7 +109,8 @@ def train(config):
         heatmap_sigma=model_config["heatmap_kp_sigma"],
         n_points=model_config["num_keypoints"],
         symmetry_point_ids=config["data"]["symmetry_point_ids"],
-        shuffle=False, augment=False, random_flip=False, random_rotate=False, random_scale_on_crop=False)
+        shuffle=False, augment=False, random_flip=False, random_rotate=False,
+        clip_landmark=train_config["keypoint_loss"] == "binary_crossentropy",random_scale_on_crop=False)
 
     # Initial epoch. Use when continue training
     initial_epoch = train_config.get("initial_epoch", 0)

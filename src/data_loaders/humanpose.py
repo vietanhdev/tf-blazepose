@@ -17,7 +17,7 @@ from .augmentation_utils import random_occlusion
 
 class DataSequence(Sequence):
 
-    def __init__(self, image_folder, label_file, batch_size=8, input_size=(256, 256), output_heatmap=True, heatmap_size=(128, 128), heatmap_sigma=4, n_points=16, shuffle=True, augment=False, random_flip=False, random_rotate=False, random_scale_on_crop=False, symmetry_point_ids=None):
+    def __init__(self, image_folder, label_file, batch_size=8, input_size=(256, 256), output_heatmap=True, heatmap_size=(128, 128), heatmap_sigma=4, n_points=16, shuffle=True, augment=False, random_flip=False, random_rotate=False, random_scale_on_crop=False, clip_landmark=False, symmetry_point_ids=None):
 
         self.batch_size = batch_size
         self.input_size = input_size
@@ -31,6 +31,7 @@ class DataSequence(Sequence):
         self.augment = augment
         self.n_points = n_points
         self.symmetry_point_ids = symmetry_point_ids
+        self.clip_landmark = clip_landmark # Clip value of landmark to range [0, 1]
 
         with open(label_file, "r") as fp:
             self.anno = json.load(fp)
@@ -43,7 +44,7 @@ class DataSequence(Sequence):
         Number of batch in the Sequence.
         :return: The number of batches in the Sequence.
         """
-        return math.floor(len(self.anno) / float(self.batch_size))
+        return math.ceil(len(self.anno) / float(self.batch_size))
 
     def __getitem__(self, idx):
         """
@@ -77,10 +78,11 @@ class DataSequence(Sequence):
         batch_image = DataSequence.preprocess_images(batch_image)
         batch_landmark = self.preprocess_landmarks(batch_landmark)
 
-        # # Prevent values from going outside [0, 1]
-        # # Only applied for sigmoid output
-        # batch_landmark[batch_landmark < 0] = 0
-        # batch_landmark[batch_landmark > 1] = 1
+        # Prevent values from going outside [0, 1]
+        # Only applied for sigmoid output
+        if self.clip_landmark:
+            batch_landmark[batch_landmark < 0] = 0
+            batch_landmark[batch_landmark > 1] = 1
 
         if self.output_heatmap:
             return batch_image, [batch_landmark, batch_heatmap]
@@ -100,9 +102,10 @@ class DataSequence(Sequence):
 
     def preprocess_landmarks(self, landmarks):
 
+        first_dim = landmarks.shape[0]
         landmarks = landmarks.reshape((-1, 3))
         landmarks = normalize_landmark(landmarks, self.input_size)
-        landmarks = landmarks.reshape((self.batch_size, -1))
+        landmarks = landmarks.reshape((first_dim, -1))
         return landmarks
 
     def load_data(self, img_folder, data):

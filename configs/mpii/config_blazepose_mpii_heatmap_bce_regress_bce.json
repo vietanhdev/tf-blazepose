@@ -1,5 +1,5 @@
 {
-    "experiment_name":                  "blazepose_mpii_heatmap_bce",
+    "experiment_name":                  "blazepose_mpii_heatmap_bce_regress_bce",
     "trainer":                          "blazepose_trainer",
     "data_loader":                      "humanpose",      
     "data": {   
@@ -21,16 +21,16 @@
         "model_type":                  "SIGMOID_HEATMAP_SIGMOID_REGRESS_TWO_HEAD"
     },
     "train": {
-        "train_phase":                  "HEATMAP",
+        "train_phase":                  "REGRESSION",
         "heatmap_loss":                 "binary_crossentropy",
-        "keypoint_loss":                "mean_squared_error",
-        "loss_weights":                 {"heatmap": 1.0, "joints": 0.0},
-        "train_batch_size":             16,
-        "val_batch_size":               16,
+        "keypoint_loss":                "binary_crossentropy",
+        "loss_weights":                 {"heatmap": 0.0, "joints": 1.0},
+        "train_batch_size":             32,
+        "val_batch_size":               32,
         "nb_epochs":                    1000,
-        "learning_rate":                1e-4,
-        "load_weights":                 false,
-        "pretrained_weights_path":      "",
+        "learning_rate":                1e-3,
+        "load_weights":                 true,
+        "pretrained_weights_path":      "experiments/blazepose_mpii_heatmap_bce2/models/model_ep011.h5",
         "initial_epoch":                0
     },
     "test": {

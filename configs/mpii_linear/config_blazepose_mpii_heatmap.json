@@ -1,5 +1,5 @@
 {
-    "experiment_name":                  "blazepose_mpii_heatmap_bce",
+    "experiment_name":                  "mpii_linear_heatmap2",
     "trainer":                          "blazepose_trainer",
     "data_loader":                      "humanpose",      
     "data": {   
@@ -16,22 +16,22 @@
         "im_height":                    256,
         "heatmap_width":                128,
         "heatmap_height":               128,
-        "heatmap_kp_sigma":             4,
+        "heatmap_kp_sigma":             8,
         "num_keypoints":                16,
-        "model_type":                  "SIGMOID_HEATMAP_SIGMOID_REGRESS_TWO_HEAD"
+        "model_type":                  "ALL_LINEAR_TWO_HEAD"
     },
     "train": {
         "train_phase":                  "HEATMAP",
-        "heatmap_loss":                 "binary_crossentropy",
-        "keypoint_loss":                "mean_squared_error",
+        "heatmap_loss":                 "huber",
+        "keypoint_loss":                "huber",
         "loss_weights":                 {"heatmap": 1.0, "joints": 0.0},
-        "train_batch_size":             16,
-        "val_batch_size":               16,
+        "train_batch_size":             32,
+        "val_batch_size":               32,
         "nb_epochs":                    1000,
-        "learning_rate":                1e-4,
-        "load_weights":                 false,
-        "pretrained_weights_path":      "",
-        "initial_epoch":                0
+        "learning_rate":                1e-3,
+        "load_weights":                 true,
+        "pretrained_weights_path":      "experiments/mpii_linear_heatmap/models/model_ep227.h5",
+        "initial_epoch":                227
     },
     "test": {
         "pck_ref_points_idxs" :         [8, 9],
