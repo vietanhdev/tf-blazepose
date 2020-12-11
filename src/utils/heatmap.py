@@ -83,6 +83,10 @@ def nms(heat, kernel=3):
 
 @tf.function
 def find_keypoints_from_heatmap(batch_heatmaps):
+
+    mask = tf.greater(batch_heatmaps, 0.1)
+    tf.boolean_mask(batch_heatmaps, mask)
+
     batch, height, width, n_points = tf.shape(batch_heatmaps)[0], tf.shape(
         batch_heatmaps)[1], tf.shape(batch_heatmaps)[2], tf.shape(batch_heatmaps)[3]
 
