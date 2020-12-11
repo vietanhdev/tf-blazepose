@@ -8,7 +8,7 @@ from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard
 from ..train_phase import TrainPhase
 from ..models import ModelCreator
 
-from .losses import euclidean_distance_loss, focal_tversky, focal_loss
+from .losses import euclidean_distance_loss, focal_tversky, focal_loss, get_huber_loss, get_wing_loss
 from .pck import get_pck_metric
 
 def train(config):
@@ -59,13 +59,15 @@ def train(config):
         elif loss_functions[k] == "focal_tversky":
             loss_functions[k] = focal_tversky
         elif loss_functions[k] == "huber":
-            loss_functions[k] = tf.keras.losses.Huber()
+            loss_functions[k] = get_huber_loss(delta=1.0, weights=(1.0, 1000.0))
         elif loss_functions[k] == "focal":
             loss_functions[k] = focal_loss(gamma=2, alpha=0.25)
+        elif loss_functions[k] == "wing_loss":
+            loss_functions[k] = get_wing_loss()
 
     loss_weights = train_config["loss_weights"]
     pck_metric = get_pck_metric(ref_point_pair=test_config["pck_ref_points_idxs"], thresh=test_config["pck_thresh"])()
-    model.compile(optimizer=tf.optimizers.Adam(train_config["learning_rate"]),
+    model.compile(optimizer=tf.optimizers.SGD(train_config["learning_rate"], momentum=0.1),
                   loss=loss_functions, loss_weights=loss_weights, metrics=[pck_metric])
 
 

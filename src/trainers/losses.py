@@ -104,3 +104,61 @@ def wing_loss(landmarks, labels, w=10.0, epsilon=2.0):
         )
         loss = tf.reduce_mean(tf.reduce_sum(losses, axis=[1, 2]), axis=0)
         return loss
+
+
+def get_huber_loss2(delta=1.0, weights=1.0):
+    # https://www.tensorflow.org/api_docs/python/tf/compat/v1/losses/huber_loss
+
+    def huber_loss(y_true, y_pred):
+        return tf.compat.v1.losses.huber_loss(
+            y_true, y_pred, weights=weights, delta=delta
+        )
+
+    return huber_loss
+
+def get_huber_loss(delta=1.0, weights=(1.0, 100.0)):
+    '''
+    ' Huber loss.
+    ' https://jaromiru.com/2017/05/27/on-using-huber-loss-in-deep-q-learning/
+    ' https://en.wikipedia.org/wiki/Huber_loss
+    '''
+    def huber_loss(y_true, y_pred, clip_delta=delta, weights=weights):
+        error = y_true - y_pred
+        cond  = tf.keras.backend.abs(error) < clip_delta
+        squared_loss = 0.5 * tf.keras.backend.square(error)
+        linear_loss  = clip_delta * (tf.keras.backend.abs(error) - 0.5 * clip_delta)
+        total_loss = tf.where(cond, squared_loss, linear_loss)
+        weights = (y_true * weights[1]) + weights[0]
+        total_loss = total_loss * weights
+        return total_loss
+
+    '''
+    ' Same as above but returns the mean loss.
+    '''
+    def huber_loss_mean(y_true, y_pred, clip_delta=delta):
+        return tf.keras.backend.mean(huber_loss(y_true, y_pred, clip_delta))
+
+    return huber_loss
+
+
+def get_wing_loss(w=10.0, epsilon=2.0):
+    """
+    Arguments:
+        landmarks, labels: float tensors with shape [batch_size, num_landmarks, 2].
+        w, epsilon: a float numbers.
+    Returns:
+        a float tensor with shape [].
+    """
+    
+    def wing_loss(y_true, y_pred):
+        with tf.name_scope('wing_loss'):
+            x = y_pred - y_true
+            c = w * (1.0 - math.log(1.0 + w/epsilon))
+            absolute_x = tf.abs(x)
+            losses = tf.where(
+                tf.greater(w, absolute_x),
+                w * tf.log(1.0 + absolute_x/epsilon),
+                absolute_x - c
+            )
+            loss = tf.reduce_mean(tf.reduce_sum(losses, axis=[1, 2]), axis=0)
+            return loss
