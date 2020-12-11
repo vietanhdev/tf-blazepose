@@ -59,7 +59,7 @@ def train(config):
         elif loss_functions[k] == "focal_tversky":
             loss_functions[k] = focal_tversky
         elif loss_functions[k] == "huber":
-            loss_functions[k] = get_huber_loss(delta=1.0, weights=1e4)
+            loss_functions[k] = get_huber_loss(delta=1.0, weights=(1.0, 1000.0))
         elif loss_functions[k] == "focal":
             loss_functions[k] = focal_loss(gamma=2, alpha=0.25)
         elif loss_functions[k] == "wing_loss":
