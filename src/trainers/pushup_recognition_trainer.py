@@ -8,7 +8,7 @@ from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard
 from ..models import ModelCreator
 
 from .losses import euclidean_distance_loss, focal_tversky, focal_loss, get_huber_loss
-from .metrics import F1_Score, Recall, Precision
+from ..metrics.f1 import F1_Score, Recall, Precision
 
 def train(config):
     """Train model

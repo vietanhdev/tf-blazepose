@@ -1,5 +1,5 @@
 {
-    "experiment_name":                  "all_linear_pushup_heatmap",
+    "experiment_name":                  "pushup_heatmap",
     "trainer":                          "blazepose_trainer",
     "data_loader":                      "humanpose",      
     "data": {   
@@ -22,11 +22,11 @@
     },
     "train": {
         "train_phase":                  "HEATMAP",
-        "heatmap_loss":                 "wing_loss",
+        "heatmap_loss":                 "huber",
         "keypoint_loss":                "huber",
         "loss_weights":                 {"heatmap": 1.0, "joints": 0.0},
-        "train_batch_size":             64,
-        "val_batch_size":               64,
+        "train_batch_size":             32,
+        "val_batch_size":               32,
         "nb_epochs":                    1000,
         "learning_rate":                1e-4,
         "load_weights":                 false,

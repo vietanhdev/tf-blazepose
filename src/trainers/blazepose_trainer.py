@@ -9,7 +9,7 @@ from ..train_phase import TrainPhase
 from ..models import ModelCreator
 
 from .losses import euclidean_distance_loss, focal_tversky, focal_loss, get_huber_loss, get_wing_loss
-from .pck import get_pck_metric
+from ..metrics.pck import get_pck_metric
 
 def train(config):
     """Train model
@@ -17,6 +17,8 @@ def train(config):
     Args:
         config (dict): Training configuration from configuration file
     """
+
+    import tensorflow as tf
 
     train_config = config["train"]
     test_config = config["test"]
@@ -59,23 +61,49 @@ def train(config):
         elif loss_functions[k] == "focal_tversky":
             loss_functions[k] = focal_tversky
         elif loss_functions[k] == "huber":
-            loss_functions[k] = get_huber_loss(delta=1.0, weights=(1.0, 1000.0))
+            loss_functions[k] = get_huber_loss(delta=1.0, weights=(1.0, 1.0))
         elif loss_functions[k] == "focal":
             loss_functions[k] = focal_loss(gamma=2, alpha=0.25)
         elif loss_functions[k] == "wing_loss":
             loss_functions[k] = get_wing_loss()
 
-    loss_weights = train_config["loss_weights"]
-    pck_metric = get_pck_metric(ref_point_pair=test_config["pck_ref_points_idxs"], thresh=test_config["pck_thresh"])()
-    model.compile(optimizer=tf.optimizers.SGD(train_config["learning_rate"], momentum=0.1),
-                  loss=loss_functions, loss_weights=loss_weights, metrics=[pck_metric])
 
+    loss_weights = train_config["loss_weights"]
+    hm_pck_metric = get_pck_metric(ref_point_pair=test_config["pck_ref_points_idxs"], thresh=test_config["pck_thresh"])(name="pck1")
+    hm_mae_metric = get_mae_metric()(name="mae1")
+    kp_pck_metric = get_pck_metric(ref_point_pair=test_config["pck_ref_points_idxs"], thresh=test_config["pck_thresh"])(name="pck2")
+    kp_mae_metric = get_mae_metric()(name="mae2")
+    model.compile(optimizer=tf.optimizers.SGD(train_config["learning_rate"], momentum=0.0000001),
+                  loss=loss_functions, loss_weights=loss_weights, metrics={"heatmap": [hm_pck_metric, hm_mae_metric], "joints": [kp_pck_metric, kp_mae_metric]})
 
     # Load pretrained model
     if train_config["load_weights"]:
         print("Loading model weights: " +
               train_config["pretrained_weights_path"])
         model.load_weights(train_config["pretrained_weights_path"])
+
+
+    # import tensorflow.keras.backend as K
+    # # K.set_learning_phase(0)
+
+    import tensorflow as tf
+    import onnx
+    import keras2onnx
+    submodel = tf.keras.models.Model(inputs=model.inputs, outputs=model.get_layer("joints").outputs)
+    # submodel._name = "blazepose_heatmap_v1"
+    print(submodel.summary())
+    # onnx_model = keras2onnx.convert_keras(submodel, submodel.name)
+
+    exit(0)
+
+    # file = open("blazepose_heatmap_v1.1.onnx", "wb")
+    # file.write(onnx_model.SerializeToString())
+    # file.close()
+
+
+    # import tensorflowjs as tfjs
+    # tfjs.converters.save_keras_model(submodel, "blazepose_heatmap_v1")
+    # exit(0)
 
     # Create experiment folder
     exp_path = os.path.join("experiments/{}".format(config["experiment_name"]))
@@ -114,18 +142,32 @@ def train(config):
         shuffle=False, augment=False, random_flip=False, random_rotate=False,
         clip_landmark=train_config["keypoint_loss"] == "binary_crossentropy",random_scale_on_crop=False)
 
+    test_dataset = DataSequence(
+        config["data"]["test_images"],
+        config["data"]["test_labels"],
+        batch_size=train_config["val_batch_size"],
+        input_size=(model_config["im_width"], model_config["im_height"]),
+        heatmap_size=(model_config["heatmap_width"], model_config["heatmap_height"]),
+        heatmap_sigma=model_config["heatmap_kp_sigma"],
+        n_points=model_config["num_keypoints"],
+        symmetry_point_ids=config["data"]["symmetry_point_ids"],
+        shuffle=False, augment=False, random_flip=False, random_rotate=False,
+        clip_landmark=train_config["keypoint_loss"] == "binary_crossentropy",random_scale_on_crop=False)
+
     # Initial epoch. Use when continue training
     initial_epoch = train_config.get("initial_epoch", 0)
 
+    model.evaluate(test_dataset)
+
     # Train
-    model.fit(train_dataset,
-              epochs=train_config["nb_epochs"],
-              steps_per_epoch=len(train_dataset),
-              validation_data=val_dataset,
-              validation_steps=len(val_dataset),
-              callbacks=[tb, mc],
-              initial_epoch=initial_epoch,
-              verbose=1)
+    # model.fit(train_dataset,
+    #           epochs=train_config["nb_epochs"],
+    #           steps_per_epoch=len(train_dataset),
+    #           validation_data=val_dataset,
+    #           validation_steps=len(val_dataset),
+    #           callbacks=[tb, mc],
+    #           initial_epoch=initial_epoch,
+    #           verbose=1)
 
 
 def load_model(config, model_path):

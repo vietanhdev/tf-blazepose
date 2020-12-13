@@ -23,7 +23,7 @@
     "train": {
         "train_phase":                  "HEATMAP",
         "heatmap_loss":                 "binary_crossentropy",
-        "keypoint_loss":                "mean_squared_error",
+        "keypoint_loss":                "huber",
         "loss_weights":                 {"heatmap": 1.0, "joints": 0.0},
         "train_batch_size":             16,
         "val_batch_size":               16,

@@ -1,5 +1,5 @@
 {
-    "experiment_name":                  "pushup_recognition",
+    "experiment_name":                  "pushup_recognition2",
     "trainer":                          "pushup_recognition_trainer",
     "data_loader":                      "pushup_recognition",      
     "data": {   
@@ -23,7 +23,7 @@
         "learning_rate":                5e-4,
         "load_weights":                 false,
         "pretrained_weights_path":      "experiments/pushup_recognition/models/model_ep003.h5",
-        "initial_epoch":                3
+        "initial_epoch":               0
     },
     "test": {}
 }

@@ -16,6 +16,7 @@ def load_aug():
 
     seq[0] = iaa.Sequential(
         [
+            iaa.Crop(percent=(0, 0.3)), # random crops
             iaa.Fliplr(0.5),
             # crop images by -5% to 10% of their height/width
             sometimes(iaa.CropAndPad(
@@ -64,8 +65,9 @@ def load_aug():
                     )
                 ]),
                 # improve or worsen the contrast
-                iaa.LinearContrast((0.5, 2.0), per_channel=0.5),
+                iaa.LinearContrast((0.3, 3.0), per_channel=0.5),
                 iaa.Grayscale(alpha=(0.0, 1.0)),
+                iaa.Multiply((0.333, 3), per_channel=0.5),
             ],
                 random_order=True
             )

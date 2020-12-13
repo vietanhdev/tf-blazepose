@@ -81,15 +81,18 @@ def augment_img(image, landmark=None):
         image_aug = seq[0](images=np.array([image]))
         return image_aug[0]
     else:
-        image_aug, landmark = seq[0](images=np.array(
-            [image]), keypoints=np.array([landmark]))
+
+        landmark_xy = landmark[:, :2]
+        image_aug, landmark_xy = seq[0](images=np.array(
+            [image]), keypoints=np.array([landmark_xy]))
         image_aug = image_aug[0]
-        landmark = landmark[0]
+        landmark_xy = landmark_xy[0]
 
         # Simulate reflection
         if random.random() < 0.1:
-            image_aug = add_vertical_reflection(image_aug, landmark)
+            image_aug = add_vertical_reflection(image_aug, landmark_xy)
 
+        landmark[:, :2] = landmark_xy
         # draw = image_aug.copy()
         # for i in range(landmark.shape[0]):
         # 	draw = cv2.circle(draw, (int(landmark[i][0]), int(landmark[i][1])), 2, (0,255,0), 2)
