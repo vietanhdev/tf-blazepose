@@ -1,14 +1,14 @@
 {
-    "experiment_name":                  "blazepose_lsp_lspet_pushup_heatmap_focal",
+    "experiment_name":                  "pushup_heatmap",
     "trainer":                          "blazepose_trainer",
     "data_loader":                      "humanpose",      
     "data": {   
-        "train_images":                 "data/lsp_lspet_pushup/images/",
-        "train_labels":                 "data/lsp_lspet_pushup/train.json",
-        "val_images":                   "data/lsp_lspet_pushup/images/",
-        "val_labels":                   "data/lsp_lspet_pushup/val.json",
-        "test_images":                  "data/lsp_lspet_pushup/images/",
-        "test_labels":                  "data/lsp_lspet_pushup/test.json",
+        "train_images":                 "data/mpii_pushup/images/",
+        "train_labels":                 "data/mpii_pushup/train.json",
+        "val_images":                   "data/mpii_pushup/images/",
+        "val_labels":                   "data/mpii_pushup/val.json",
+        "test_images":                  "data/mpii_pushup/images/",
+        "test_labels":                  "data/mpii_pushup/test.json",
         "symmetry_point_ids":           [[0,6], [1,5], [2,4]]
     },                   
     "model" : {
@@ -18,23 +18,23 @@
         "heatmap_height":               128,
         "heatmap_kp_sigma":             4,
         "num_keypoints":                7,
-        "model_type":                  "TWO_HEAD"
+        "model_type":                  "ALL_LINEAR_TWO_HEAD"
     },
     "train": {
         "train_phase":                  "HEATMAP",
-        "heatmap_loss":                 "focal",
-        "keypoint_loss":                "mean_squared_error",
+        "heatmap_loss":                 "huber",
+        "keypoint_loss":                "huber",
         "loss_weights":                 {"heatmap": 1.0, "joints": 0.0},
-        "train_batch_size":             8,
-        "val_batch_size":               8,
+        "train_batch_size":             32,
+        "val_batch_size":               32,
         "nb_epochs":                    1000,
         "learning_rate":                1e-4,
         "load_weights":                 false,
         "pretrained_weights_path":      "",
-        "initial_epoch":                0
+        "initial_epoch":                126
     },
     "test": {
         "pck_ref_points_idxs" :         [2, 4],
-        "pck_thresh":                   0.2
+        "pck_thresh":                   0.25
     }
 }

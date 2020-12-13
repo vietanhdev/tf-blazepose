@@ -1,0 +1,29 @@
+{
+    "experiment_name":                  "pushup_recognition2",
+    "trainer":                          "pushup_recognition_trainer",
+    "data_loader":                      "pushup_recognition",      
+    "data": {   
+        "train_images":                 "data/mpii_pushup/images/",
+        "train_labels":                 "data/mpii_pushup/train.json",
+        "val_images":                   "data/mpii_pushup/images/",
+        "val_labels":                   "data/mpii_pushup/val.json",
+        "test_images":                  "data/mpii_pushup/images/",
+        "test_labels":                  "data/mpii_pushup/test.json"
+    },                   
+    "model" : {
+        "im_width":                     224,
+        "im_height":                    224,
+        "model_type":                   "PUSHUP_RECOGNITION"
+    },
+    "train": {
+        "loss":                         "binary_crossentropy",
+        "train_batch_size":             16,
+        "val_batch_size":               16,
+        "nb_epochs":                    1000,
+        "learning_rate":                5e-4,
+        "load_weights":                 false,
+        "pretrained_weights_path":      "experiments/pushup_recognition/models/model_ep003.h5",
+        "initial_epoch":               0
+    },
+    "test": {}
+}

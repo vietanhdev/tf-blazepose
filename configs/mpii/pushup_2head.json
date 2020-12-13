@@ -1,0 +1,40 @@
+{
+    "experiment_name":                  "2head_model",
+    "trainer":                          "blazepose_trainer2",
+    "data_loader":                      "humanpose_2head",      
+    "data": {   
+        "train_images":                 "data/mpii_pushup/images/",
+        "train_labels":                 "data/mpii_pushup/train2.json",
+        "val_images":                   "data/mpii_pushup/images/",
+        "val_labels":                   "data/mpii_pushup/val2.json",
+        "test_images":                  "data/mpii_pushup/images/",
+        "test_labels":                  "data/mpii_pushup/test2.json",
+        "symmetry_point_ids":           [[12, 13], [10, 15], [11, 14], [2, 3], [1, 4], [0, 5]]
+    },                   
+    "model" : {
+        "im_width":                     256,
+        "im_height":                    256,
+        "heatmap_width":                128,
+        "heatmap_height":               128,
+        "heatmap_kp_sigma":             4,
+        "num_keypoints":                16,
+        "model_type":                  "BLAZEPOSE_WITH_PUSHUP_CLASSIFY"
+    },
+    "train": {
+        "train_phase":                  "HEATMAP",
+        "heatmap_loss":                 "focal_tversky",
+        "is_pushup_loss":               "binary_crossentropy",
+        "loss_weights":                 {"heatmap": 1.0, "is_pushup": 1.0},
+        "train_batch_size":             16,
+        "val_batch_size":               16,
+        "nb_epochs":                    1000,
+        "learning_rate":                1e-4,
+        "load_weights":                 false,
+        "pretrained_weights_path":      "",
+        "initial_epoch":                0
+    },
+    "test": {
+        "pck_ref_points_idxs" :         [12, 13],
+        "pck_thresh":                   0.25
+    }
+}

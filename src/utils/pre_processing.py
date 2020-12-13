@@ -107,7 +107,7 @@ def square_crop_with_keypoints(image, bbox, keypoints, pad_value=0):
     keypoints = np.array(keypoints)
     missing_idxs = []
     for i in range(keypoints.shape[0]):
-        if keypoints[i, 0] == -1 and keypoints[i, 1] == -1:
+        if keypoints[i, 0] == 0 and keypoints[i, 1] == 0:
             missing_idxs.append(i)
 
     # Update keypoints
@@ -116,8 +116,8 @@ def square_crop_with_keypoints(image, bbox, keypoints, pad_value=0):
 
     # Restore missing keypoints
     for i in missing_idxs:
-        keypoints[i, 0] = -1
-        keypoints[i, 1] = -1
+        keypoints[i, 0] = 0
+        keypoints[i, 1] = 0
 
     return cropped_image, keypoints
 

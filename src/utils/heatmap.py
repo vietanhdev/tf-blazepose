@@ -62,10 +62,12 @@ def gen_gt_heatmap(keypoints, sigma, heatmap_size):
     npart = keypoints.shape[0]
     gtmap = np.zeros(shape=(heatmap_size[1], heatmap_size[0], npart), dtype=float)
     for i in range(npart):
+        if keypoints[i, 0] == 0 and keypoints[i, 1] == 0:
+            continue
         is_visible = True
         if len(keypoints[0]) > 2:
             visibility = keypoints[i, 2]
-            if visibility <= 0 or (keypoints[i, 0] == -1 and keypoints[i, 1] == -1):
+            if visibility <= 0:
                 is_visible = False
         gtmap[:, :, i] = gen_point_heatmap(
             gtmap[:, :, i], keypoints[i, :], sigma)
@@ -82,7 +84,8 @@ def nms(heat, kernel=3):
 
 
 @tf.function
-def find_keypoints_from_heatmap(batch_heatmaps):
+def find_keypoints_from_heatmap(batch_heatmaps, normalize=False):
+
     batch, height, width, n_points = tf.shape(batch_heatmaps)[0], tf.shape(
         batch_heatmaps)[1], tf.shape(batch_heatmaps)[2], tf.shape(batch_heatmaps)[3]
 
@@ -100,6 +103,10 @@ def find_keypoints_from_heatmap(batch_heatmaps):
     argmax_x = argmax % width
     argmax_y = tf.cast(argmax_y, tf.float32)
     argmax_x = tf.cast(argmax_x, tf.float32)
+
+    if normalize:
+        argmax_x = argmax_x / tf.cast(width, tf.float32)
+        argmax_y = argmax_y / tf.cast(height, tf.float32)
 
     # Shape: batch * 3 * n_points
     batch_keypoints = tf.stack((argmax_x, argmax_y, scores), axis=1)

@@ -69,18 +69,28 @@ while(True):
                             config["model"]["im_height"] / config["model"]["heatmap_height"]], dtype=float)
     heatmap_kps[:, :2] = heatmap_kps[:, :2] * scale * heatmap_stride
 
-    # Filter heatmap keypoint by confidence
-    for i in range(len(heatmap_kps)):
-        if heatmap_kps[i, 2] < confth:
-            heatmap_kps[i, :2] = [0,0]
-
     # Scale regression keypoint
     regress_kps = regress_kps.reshape((-1, 3))
     regress_kps[:, :2] = regress_kps[:, :2] * np.array([origin_frame.shape[1], origin_frame.shape[0]])
 
+    # Filter heatmap keypoint by confidence
+    heatmap_kps_visibility = np.ones((len(heatmap_kps),), dtype=int)
+    for i in range(len(heatmap_kps)):
+        if heatmap_kps[i, 2] < confth:
+            heatmap_kps[i, :2] = [-1, -1]
+            heatmap_kps_visibility[i] = 0
+
+    regress_kps_visibility = np.ones((len(regress_kps),), dtype=int)
+    for i in range(len(regress_kps)):
+        if regress_kps[i, 2] < 0.5:
+            regress_kps[i, :2] = [-1, -1]
+            regress_kps_visibility[i] = 0
+
+    edges = [[0,1,2,3,4,5,6]]
+
     draw = origin_frame.copy()
-    draw = visualize_keypoints(draw, regress_kps[:, :2], point_color=(0, 255, 0), text_color=(255, 0, 0))
-    draw = visualize_keypoints(draw, heatmap_kps[:, :2], point_color=(0, 255, 0), text_color=(0, 0, 255))
+    draw = visualize_keypoints(draw, regress_kps[:, :2], visibility=regress_kps_visibility, edges=edges, point_color=(0, 255, 0), text_color=(255, 0, 0))
+    draw = visualize_keypoints(draw, heatmap_kps[:, :2], visibility=heatmap_kps_visibility, edges=edges, point_color=(0, 255, 0), text_color=(0, 0, 255))
     cv2.imshow('Result', draw)
 
     heatmap = np.sum(heatmap[0], axis=2)

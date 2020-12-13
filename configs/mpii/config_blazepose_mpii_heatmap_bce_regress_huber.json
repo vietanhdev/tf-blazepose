@@ -1,0 +1,40 @@
+{
+    "experiment_name":                  "blazepose_mpii_heatmap_bce_regress_huber",
+    "trainer":                          "blazepose_trainer",
+    "data_loader":                      "humanpose",      
+    "data": {   
+        "train_images":                 "data/mpii/images/",
+        "train_labels":                 "data/mpii/train.json",
+        "val_images":                   "data/mpii/images/",
+        "val_labels":                   "data/mpii/val.json",
+        "test_images":                  "data/mpii/images/",
+        "test_labels":                  "data/mpii/test.json",
+        "symmetry_point_ids":           [[12, 13], [10, 15], [11, 14], [2, 3], [1, 4], [0, 5]]
+    },                   
+    "model" : {
+        "im_width":                     256,
+        "im_height":                    256,
+        "heatmap_width":                128,
+        "heatmap_height":               128,
+        "heatmap_kp_sigma":             4,
+        "num_keypoints":                7,
+        "model_type":                  "SIGMOID_HEATMAP_LINEAR_REGRESS_TWO_HEAD"
+    },
+    "train": {
+        "train_phase":                  "REGRESSION",
+        "heatmap_loss":                 "binary_crossentropy",
+        "keypoint_loss":                "huber",
+        "loss_weights":                 {"heatmap": 0.0, "joints": 1.0},
+        "train_batch_size":             32,
+        "val_batch_size":               32,
+        "nb_epochs":                    1000,
+        "learning_rate":                1e-3,
+        "load_weights":                 false,
+        "pretrained_weights_path":      "",
+        "initial_epoch":                0
+    },
+    "test": {
+        "pck_ref_points_idxs" :         [8, 9],
+        "pck_thresh":                   0.5
+    }
+}

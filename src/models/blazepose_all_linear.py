@@ -83,7 +83,7 @@ class BlazePose():
                 filters=8, kernel_size=1, activation="relu"),
             tf.keras.layers.Conv2D(
                 filters=self.num_keypoints, kernel_size=3, padding="same", activation=None) # -> Heatmap output
-        ])
+        ], name="heatmap")
 
         # === Regression ===
 
@@ -155,10 +155,7 @@ class BlazePose():
         x = self.conv9a(x) + self.conv9b(y1)
         # In: 1, 64, 64, 48
         y = self.conv10a(x) + self.conv10b(y0)
-        y = self.conv11(y)
-
-        # In: 1, 128, 128, 8
-        heatmap = tf.keras.layers.Activation("sigmoid", name="heatmap")(y)
+        heatmap = self.conv11(y)
 
         # === Regression ===
 

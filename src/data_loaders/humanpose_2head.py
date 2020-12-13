@@ -59,14 +59,16 @@ class DataSequence(Sequence):
         batch_image = []
         batch_landmark = []
         batch_heatmap = []
+        batch_pushup = []
 
         for data in batch_data:
 
             # Load and augment data
-            image, landmark, heatmap = self.load_data(self.image_folder, data)
-
+            image, landmark, heatmap, is_pushup = self.load_data(self.image_folder, data)
+            
             batch_image.append(image)
             batch_landmark.append(landmark)
+            batch_pushup.append(is_pushup)
             if self.output_heatmap:
                 batch_heatmap.append(heatmap)
 
@@ -78,16 +80,20 @@ class DataSequence(Sequence):
         batch_image = DataSequence.preprocess_images(batch_image)
         batch_landmark = self.preprocess_landmarks(batch_landmark)
 
+        # print(batch_pushup)
+        batch_pushup = np.array(batch_pushup)
+
         # Prevent values from going outside [0, 1]
         # Only applied for sigmoid output
         if self.clip_landmark:
             batch_landmark[batch_landmark < 0] = 0
             batch_landmark[batch_landmark > 1] = 1
 
-        if self.output_heatmap:
-            return batch_image, [batch_landmark, batch_heatmap]
-        else:
-            return batch_image, batch_landmark
+        # if self.output_heatmap:
+        #     return batch_image, [batch_landmark, batch_heatmap]
+        # else:
+        #     return batch_image, batch_landmark
+        return batch_image, [batch_heatmap, batch_pushup]
 
     @staticmethod
     def preprocess_images(images):
@@ -130,7 +136,8 @@ class DataSequence(Sequence):
         visibility = np.ones((landmark.shape[0], 1), dtype=int)
         for i in range(len(visibility)):
             if 0 > landmark[i][0] or landmark[i][0] >= image.shape[1] \
-                    or 0 > landmark[i][1] or landmark[i][1] >= image.shape[0]:
+                    or 0 > landmark[i][1] or landmark[i][1] >= image.shape[0] \
+                    or (landmark[i][0] == 0 and landmark[i][1] == 0):
                 visibility[i] = 0
 
         image, landmark = square_crop_with_keypoints(
@@ -169,9 +176,6 @@ class DataSequence(Sequence):
                     landmark[p1, :] = landmark[p2, :].copy()
                     landmark[p2, :] = l
 
-        if self.augment:
-            image, landmark = augment_img(image, landmark)
-
         # Random occlusion
         # (see BlazePose paper for more detail)
         if self.augment and random.random() < 0.2:
@@ -184,6 +188,22 @@ class DataSequence(Sequence):
         visibility = visibility.reshape((landmark.shape[0], 1))
         landmark = np.hstack((landmark, visibility))
 
+        if self.augment:
+
+            # Mark missing keypoints
+            missing_idxs = []
+            for i in range(landmark.shape[0]):
+                if landmark[i, 0] == 0 and landmark[i, 1] == 0:
+                    missing_idxs.append(i)
+
+            image, landmark = augment_img(image, landmark)
+
+            # Restore missing keypoints
+            for i in missing_idxs:
+                landmark[i, 0] = 0
+                landmark[i, 1] = 0
+
+
         # Generate heatmap
         gtmap = None
         if self.output_heatmap:
@@ -193,7 +213,7 @@ class DataSequence(Sequence):
             gtmap = gen_gt_heatmap(
                 gtmap_kps, self.heatmap_sigma, self.heatmap_size)
 
-        # Uncomment following lines to debug augmentation
+        # # Uncomment following lines to debug augmentation
         # draw = visualize_keypoints(image, landmark, visibility, text_color=(0,0,255))
         # cv2.namedWindow("draw", cv2.WINDOW_NORMAL)
         # cv2.imshow("draw", draw)
@@ -202,4 +222,4 @@ class DataSequence(Sequence):
         # cv2.waitKey(0)
 
         landmark = np.array(landmark)
-        return image, landmark, gtmap
+        return image, landmark, gtmap, int(data["is_pushing_up"])

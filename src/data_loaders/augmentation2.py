@@ -16,16 +16,18 @@ def load_aug():
 
     seq[0] = iaa.Sequential(
         [
+            iaa.Crop(percent=(0, 0.3)), # random crops
+            iaa.Fliplr(0.5),
             # crop images by -5% to 10% of their height/width
             sometimes(iaa.CropAndPad(
-                percent=(-0.05, 0.1),
+                percent=(-0.2, 0.3),
                 pad_mode=ia.ALL,
                 pad_cval=(0, 255)
             )),
             sometimes(iaa.Affine(
-                scale={"x": (0.9, 1.1), "y": (0.9, 1.1)},
-                translate_percent={"x": (-0.05, 0.05), "y": (-0.05, 0.05)},
-                rotate=(-10, 10),
+                scale={"x": (0.7, 1.3), "y": (0.7, 1.3)},
+                translate_percent={"x": (-0.2, 0.2), "y": (-0.2, 0.2)},
+                rotate=(-5, 5),
                 shear=(-5, 5),
                 order=[0, 1],
                 # if mode is constant, use a cval between 0 and 255
@@ -63,8 +65,9 @@ def load_aug():
                     )
                 ]),
                 # improve or worsen the contrast
-                iaa.LinearContrast((0.5, 2.0), per_channel=0.5),
+                iaa.LinearContrast((0.3, 3.0), per_channel=0.5),
                 iaa.Grayscale(alpha=(0.0, 1.0)),
+                iaa.Multiply((0.333, 3), per_channel=0.5),
             ],
                 random_order=True
             )
@@ -73,26 +76,80 @@ def load_aug():
     )
 
 
-def augment_img(image, landmark=None):
+def crop(image):
+    # print(image.shape)
+    old_size = (image.shape[1], image.shape[0])
+    im_height = image.shape[0]
+    max_y = random.randint(int(0.6 * im_height), int(0.9 * im_height))
+    # print(max_y)
+    
+    image = image[0:max_y, :, :].copy()
+    image = cv2.resize(image, (old_size[0], old_size[1]))
+    # print(image.shape)
+    return image
+
+def crop0(image):
+    # print(image.shape)
+    old_size = (image.shape[1], image.shape[0])
+    im_height = image.shape[0]
+    max_y = random.randint(int(0.0 * im_height), int(0.5 * im_height))
+    # print(max_y)
+    
+    image = image[max_y:, :, :].copy()
+    image = cv2.resize(image, (old_size[0], old_size[1]))
+    # print(image.shape)
+    return image
+
+def crop2(image):
+    # print(image.shape)
+    old_size = (image.shape[1], image.shape[0])
+    im_width = image.shape[1]
+    max_x = random.randint(int(0.0 * im_width), int(0.3 * im_width))
+    # print(max_y)
+    
+    image = image[:, max_x:, :].copy()
+    image = cv2.resize(image, (old_size[0], old_size[1]))
+    # print(image.shape)
+    return image
+
+def crop3(image):
+    # print(image.shape)
+    old_size = (image.shape[1], image.shape[0])
+    im_width = image.shape[1]
+    max_x = random.randint(int(0.7 * im_width), int(0.95 * im_width))
+    # print(max_y)
+    
+    image = image[:, :max_x, :].copy()
+    image = cv2.resize(image, (old_size[0], old_size[1]))
+    # print(image.shape)
+    return image
+
+def augment_img(image, y, landmark=None):
     if seq[0] is None:
         load_aug()
+
+    if random.random() < 0.5 and y:
+        if random.random() < 0.5:
+            image = crop(image)
+        else:
+            image = crop0(image)
+
+        image = crop2(image)
+        image = crop3(image)
 
     if landmark is None:
         image_aug = seq[0](images=np.array([image]))
         return image_aug[0]
     else:
-
-        landmark_xy = landmark[:, :2]
-        image_aug, landmark_xy = seq[0](images=np.array(
-            [image]), keypoints=np.array([landmark_xy]))
+        image_aug, landmark = seq[0](images=np.array(
+            [image]), keypoints=np.array([landmark]))
         image_aug = image_aug[0]
-        landmark_xy = landmark_xy[0]
+        landmark = landmark[0]
 
         # Simulate reflection
         if random.random() < 0.1:
-            image_aug = add_vertical_reflection(image_aug, landmark_xy)
+            image_aug = add_vertical_reflection(image_aug, landmark)
 
-        landmark[:, :2] = landmark_xy
         # draw = image_aug.copy()
         # for i in range(landmark.shape[0]):
         # 	draw = cv2.circle(draw, (int(landmark[i][0]), int(landmark[i][1])), 2, (0,255,0), 2)
