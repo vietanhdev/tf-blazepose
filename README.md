@@ -6,7 +6,7 @@ Currently, the model being developed in this repo is based on TFLite (.tflite) m
 
 **Note:** This repository is still under active development.
 
-**Update 14/12/2020:** My PushUp Counter App is using this BlazePose model to count pushups from videos/webcam. ![***Read more.***](https://github.com/vietanhdev/pushup-counter-app)
+**Update 14/12/2020:** My PushUp Counter App is using this BlazePose model to count pushups from videos/webcam. [***Read more.***](https://github.com/vietanhdev/pushup-counter-app)
 
 ## TODOs
 
