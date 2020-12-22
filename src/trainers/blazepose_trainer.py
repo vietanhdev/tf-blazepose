@@ -10,6 +10,7 @@ from ..models import ModelCreator
 
 from .losses import euclidean_distance_loss, focal_tversky, focal_loss, get_huber_loss, get_wing_loss
 from ..metrics.pck import get_pck_metric
+from ..metrics.mae import get_mae_metric
 
 def train(config):
     """Train model
@@ -82,29 +83,6 @@ def train(config):
               train_config["pretrained_weights_path"])
         model.load_weights(train_config["pretrained_weights_path"])
 
-
-    # import tensorflow.keras.backend as K
-    # # K.set_learning_phase(0)
-
-    import tensorflow as tf
-    import onnx
-    import keras2onnx
-    submodel = tf.keras.models.Model(inputs=model.inputs, outputs=model.get_layer("joints").outputs)
-    # submodel._name = "blazepose_heatmap_v1"
-    print(submodel.summary())
-    # onnx_model = keras2onnx.convert_keras(submodel, submodel.name)
-
-    exit(0)
-
-    # file = open("blazepose_heatmap_v1.1.onnx", "wb")
-    # file.write(onnx_model.SerializeToString())
-    # file.close()
-
-
-    # import tensorflowjs as tfjs
-    # tfjs.converters.save_keras_model(submodel, "blazepose_heatmap_v1")
-    # exit(0)
-
     # Create experiment folder
     exp_path = os.path.join("experiments/{}".format(config["experiment_name"]))
     pathlib.Path(exp_path).mkdir(parents=True, exist_ok=True)
@@ -157,17 +135,16 @@ def train(config):
     # Initial epoch. Use when continue training
     initial_epoch = train_config.get("initial_epoch", 0)
 
-    model.evaluate(test_dataset)
 
     # Train
-    # model.fit(train_dataset,
-    #           epochs=train_config["nb_epochs"],
-    #           steps_per_epoch=len(train_dataset),
-    #           validation_data=val_dataset,
-    #           validation_steps=len(val_dataset),
-    #           callbacks=[tb, mc],
-    #           initial_epoch=initial_epoch,
-    #           verbose=1)
+    model.fit(train_dataset,
+              epochs=train_config["nb_epochs"],
+              steps_per_epoch=len(train_dataset),
+              validation_data=val_dataset,
+              validation_steps=len(val_dataset),
+              callbacks=[tb, mc],
+              initial_epoch=initial_epoch,
+              verbose=1)
 
 
 def load_model(config, model_path):

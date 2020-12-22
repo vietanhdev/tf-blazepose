@@ -192,6 +192,7 @@ class DataSequence(Sequence):
                                 * np.array(self.heatmap_size) / np.array(self.input_size)).astype(int)
             gtmap = gen_gt_heatmap(
                 gtmap_kps, self.heatmap_sigma, self.heatmap_size)
+            # gtmap = np.clip(np.sum(gtmap, axis=2, keepdims=True), None, 1)
 
         # Uncomment following lines to debug augmentation
         # draw = visualize_keypoints(image, landmark, visibility, text_color=(0,0,255))
