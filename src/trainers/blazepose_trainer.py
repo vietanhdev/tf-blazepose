@@ -74,7 +74,7 @@ def train(config):
     hm_mae_metric = get_mae_metric()(name="mae1")
     kp_pck_metric = get_pck_metric(ref_point_pair=test_config["pck_ref_points_idxs"], thresh=test_config["pck_thresh"])(name="pck2")
     kp_mae_metric = get_mae_metric()(name="mae2")
-    model.compile(optimizer=tf.optimizers.SGD(train_config["learning_rate"], momentum=0.0000001),
+    model.compile(optimizer=tf.optimizers.SGD(train_config["learning_rate"], momentum=0.9),
                   loss=loss_functions, loss_weights=loss_weights, metrics={"heatmap": [hm_pck_metric, hm_mae_metric], "joints": [kp_pck_metric, kp_mae_metric]})
 
     # Load pretrained model
