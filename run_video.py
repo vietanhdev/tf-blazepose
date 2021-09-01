@@ -23,11 +23,12 @@ parser.add_argument(
     '-confidence',
     '--confidence',
     default=0.05,
-    help='Path to video file')
+    help='Confidence for heatmap point')
 parser.add_argument(
     '-v',
     '--video',
-    help='Confidence for heatmap point')
+    help='Path to video file')
+
 args = parser.parse_args()
 
 # Webcam
