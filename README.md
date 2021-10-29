@@ -58,7 +58,7 @@ Currently, the model being developed in this repo is based on TFLite (.tflite) m
 
 ## Demo
 
-- Download pretrained model for PushUp dataset [here](https://drive.google.com/file/d/1tpF1Sct8rhYJ9TQr-BnNNulk9VYNMzt0/view?usp=sharing) and put into `trained_models/blazepose_pushup_v1.h5`. Test with your webcam:
+- Download pretrained model for PushUp dataset [here](https://1drv.ms/u/s!Av71xxzl6mYZgddJ7IdF0wfjwI3sgw?e=l94WL5) and put into `trained_models/blazepose_pushup_v1.h5`. Test with your webcam:
 
 ```
 python run_video.py -c configs/mpii/config_blazepose_mpii_pushup_heatmap_bce_regress_huber.json  -m trained_models/blazepose_pushup_v1.h5 -v webcam --confidence 0.3
